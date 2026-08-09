@@ -1,0 +1,82 @@
+[
+ {
+  "id": "intro_practice",
+  "text": "Settle in. Long spine, soft shoulders, relaxed jaw."
+ },
+ {
+  "id": "intro_calmnow",
+  "text": "Begin. Breathe with me."
+ },
+ {
+  "id": "headphone_reminder",
+  "text": "Put on headphones for the full effect. We'll continue either way."
+ },
+ {
+  "id": "phrase_breathe_in",
+  "text": "Breathe in"
+ },
+ {
+  "id": "phrase_and_in",
+  "text": "and in"
+ },
+ {
+  "id": "phrase_hold",
+  "text": "Hold"
+ },
+ {
+  "id": "phrase_breathe_out",
+  "text": "Breathe out"
+ },
+ {
+  "id": "phrase_let_it_all_out",
+  "text": "Let it all out"
+ },
+ {
+  "id": "phrase_let_it_go",
+  "text": "Let it go"
+ },
+ {
+  "id": "phrase_exhale",
+  "text": "Exhale"
+ },
+ {
+  "id": "posture_1",
+  "text": "Long spine"
+ },
+ {
+  "id": "posture_2",
+  "text": "Drop your shoulders"
+ },
+ {
+  "id": "posture_3",
+  "text": "Relax your jaw"
+ },
+ {
+  "id": "posture_4",
+  "text": "Lengthen your neck"
+ },
+ {
+  "id": "sound_xu",
+  "text": "嘘"
+ },
+ {
+  "id": "sound_he",
+  "text": "呵"
+ },
+ {
+  "id": "sound_hu",
+  "text": "呼"
+ },
+ {
+  "id": "sound_si",
+  "text": "嘶"
+ },
+ {
+  "id": "sound_chui",
+  "text": "吹"
+ },
+ {
+  "id": "sound_xi",
+  "text": "嘻"
+ }
+]

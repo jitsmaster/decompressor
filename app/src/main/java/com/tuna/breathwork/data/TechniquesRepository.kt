@@ -27,11 +27,11 @@ object TechniquesRepository {
         zhName = "生理叹息",
         description = "Double inhale, long exhale — the fastest acute calm (Stanford 2023).",
         phases = listOf(
-            Phase(PhaseType.INHALE, 1_500, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.INHALE, 1_500, "and in"),
+            Phase(PhaseType.INHALE, 2_200, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.INHALE, 2_200, "and in"),
             Phase(PhaseType.EXHALE, 7_000, "Let it all out", haptic = HapticKind.SOFT),
         ),
-        cycles = 12, // 120 s exactly — the Calm Now preset
+        cycles = 10, // 11.4 s × 10 ≈ 1:54 — the Calm Now preset
         soundMode = SoundMode.THETA,
         accentColor = 0xFFB4A0E8,
         useCase = UseCase.PANIC,
@@ -91,10 +91,10 @@ object TechniquesRepository {
         zhName = "六字诀",
         description = "Six healing sounds on the exhale — the ancient Chinese release practice.",
         phases = listOf(
-            Phase(PhaseType.INHALE, 3_000, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.INHALE, 4_000, "Breathe in", haptic = HapticKind.PULSE),
             Phase(PhaseType.SOUND_EXHALE, 7_000, "Exhale", haptic = HapticKind.SOFT),
         ),
-        cycles = 18, // six sounds × 3 rounds = 3 min
+        cycles = 18, // six sounds × 3 rounds ≈ 3.3 min
         soundMode = SoundMode.THETA,
         accentColor = 0xFFC79ED2,
         useCase = UseCase.SOUND,
@@ -108,11 +108,9 @@ object TechniquesRepository {
     /** Calm Now is always the 2-minute physiological sigh (SPEC D2). */
     val calmNow: TechniqueConfig = sigh
 
-    /** Same technique at a different session length. */
-    fun withPreset(technique: TechniqueConfig, preset: Preset): TechniqueConfig =
-        if (preset == Preset.CALM_NOW) technique
-        else {
-            val cycleMs = technique.phases.sumOf { it.durationMs }
-            technique.copy(cycles = cyclesForDuration(preset.durationMs, cycleMs))
-        }
+    /** Same technique at a different session length. Calm Now is always ~2 minutes. */
+    fun withPreset(technique: TechniqueConfig, preset: Preset): TechniqueConfig {
+        val cycleMs = technique.phases.sumOf { it.durationMs }
+        return technique.copy(cycles = cyclesForDuration(preset.durationMs, cycleMs))
+    }
 }

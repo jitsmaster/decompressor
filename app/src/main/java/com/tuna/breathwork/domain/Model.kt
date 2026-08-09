@@ -4,7 +4,7 @@ import kotlin.math.roundToInt
 
 enum class PhaseType { INHALE, HOLD, EXHALE, SOUND_EXHALE }
 
-enum class HapticKind { NONE, PULSE, SOFT }
+enum class HapticKind { NONE, PULSE, SOFT, PRETICK }
 
 enum class SoundMode { THETA, ALPHA }
 

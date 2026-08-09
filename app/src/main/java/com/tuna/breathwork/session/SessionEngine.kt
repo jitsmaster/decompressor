@@ -2,6 +2,7 @@ package com.tuna.breathwork.session
 
 import com.tuna.breathwork.domain.HapticKind
 import com.tuna.breathwork.domain.Phase
+import com.tuna.breathwork.domain.PhaseType
 import com.tuna.breathwork.domain.PostureCueScheduler
 import com.tuna.breathwork.domain.SessionResult
 import com.tuna.breathwork.domain.TechniqueConfig
@@ -16,11 +17,17 @@ import kotlin.math.roundToInt
 interface VoiceProvider {
     suspend fun speak(phrase: String)
     suspend fun stop()
+
+    /** Speak and wait until playback finishes — default: fire-and-forget. */
+    suspend fun speakAndAwait(phrase: String) {
+        speak(phrase)
+    }
 }
 
-/** Vibration output boundary. */
+/** Vibration output boundary. [start] begins a pattern for the given phase duration; [stop] silences it. */
 interface HapticDriver {
-    fun fire(kind: HapticKind)
+    fun start(kind: HapticKind, durationMs: Long)
+    fun stop()
 }
 
 /** What the engine reports to its UI. */
@@ -29,6 +36,9 @@ interface SessionSink {
     fun onCycle(cycle: Int, total: Int)
     fun onComplete(result: SessionResult)
     fun onAbort()
+
+    /** Fired ~1 s before a phase ends, so the UI can cue the transition (tick sound, visual flash). */
+    fun onPhaseEnding(phase: Phase)
 }
 
 /**
@@ -70,16 +80,28 @@ class SessionEngine(
             while (cycle < config.cycles) {
                 val cue = if (postureEnabled) scheduler.cueForCycle(cycle) else null
                 val cycleSound = config.cycleSounds?.getOrNull(cycle % config.cycleSounds.size)
+                // Cue + cycle sound ride the cycle's longest phase (prefer exhale): there the
+                // queued phrases have room alongside the phase's own phrase, so recorded clips
+                // never get cut by the phase-boundary flush.
+                val cuePhaseIndex = cuePhaseIndex(config)
                 config.phases.forEachIndexed { index, phase ->
                     voice.stop()
+                    haptics.start(phase.haptic, phase.durationMs)
                     phase.voicePhrase?.let { voice.speak(it) }
-                    if (index == 0) {
+                    if (index == cuePhaseIndex) {
                         cue?.let { voice.speak(it) }
                         cycleSound?.let { voice.speak(it) }
                     }
-                    haptics.fire(phase.haptic)
                     sink.onPhase(phase)
-                    delay(phase.durationMs)
+                    // Pre-tick ~1 s before the phase ends: the "get ready to switch" cue.
+                    if (phase.durationMs > 1_500) {
+                        delay(phase.durationMs - 1_000)
+                        haptics.start(HapticKind.PRETICK, 80)
+                        sink.onPhaseEnding(phase)
+                        delay(1_000)
+                    } else {
+                        delay(phase.durationMs)
+                    }
                 }
                 cycle++
                 sink.onCycle(cycle, config.cycles)
@@ -98,12 +120,21 @@ class SessionEngine(
         }
     }
 
+    private fun cuePhaseIndex(config: TechniqueConfig): Int {
+        val maxDur = config.phases.maxOf { it.durationMs }
+        val exhaleIdx = config.phases.indexOfFirst {
+            it.durationMs == maxDur && (it.type == PhaseType.EXHALE || it.type == PhaseType.SOUND_EXHALE)
+        }
+        return if (exhaleIdx >= 0) exhaleIdx else config.phases.indexOfFirst { it.durationMs == maxDur }
+    }
+
     companion object {
+        // Short, calm posture prompts — texts match the bundled recorded clips exactly.
         val POSTURE_TEMPLATES = listOf(
-            "Long spine, soft belly",
-            "Let your shoulders drop",
-            "Unclench your jaw",
-            "Lengthen through your neck",
+            "Long spine",
+            "Drop your shoulders",
+            "Relax your jaw",
+            "Lengthen your neck",
         )
     }
 }

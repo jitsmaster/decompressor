@@ -54,6 +54,7 @@ import com.tuna.breathwork.ui.theme.TextMuted
 fun HomeScreen(
     onCalmNow: () -> Unit,
     onLibrary: () -> Unit,
+    onAmbient: () -> Unit,
     onHistory: () -> Unit,
     onSettings: () -> Unit,
 ) {
@@ -101,6 +102,20 @@ fun HomeScreen(
                 Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
                     Text("Practice Library", style = MaterialTheme.typography.titleLarge)
                     Text("5 techniques · 5 / 10 / 15 min presets", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            Surface(
+                onClick = onAmbient,
+                shape = RoundedCornerShape(28.dp),
+                color = BgSurface,
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+            ) {
+                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
+                    Text("Ambient", style = MaterialTheme.typography.titleLarge)
+                    Text("Guided sessions · EN + 普通话 (UCLA Mindful)", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
                 }
             }
         }
@@ -260,6 +275,9 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
         }
         ToggleRow("Posture reminders", s.posturePromptsEnabled) {
             scope.launch { settingsStore.update { it.copy(posturePromptsEnabled = !it.posturePromptsEnabled) } }
+        }
+        ToggleRow("Countdown ticks", s.countdownTicks) {
+            scope.launch { settingsStore.update { it.copy(countdownTicks = !it.countdownTicks) } }
         }
         ToggleRow("Reduce motion", s.reduceMotion) {
             scope.launch { settingsStore.update { it.copy(reduceMotion = !it.reduceMotion) } }

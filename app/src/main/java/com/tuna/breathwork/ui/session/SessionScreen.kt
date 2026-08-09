@@ -1,5 +1,6 @@
 package com.tuna.breathwork.ui.session
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +22,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +38,8 @@ import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.PhaseType
 import com.tuna.breathwork.ui.theme.BgDeep
 import com.tuna.breathwork.ui.theme.TextMuted
+import kotlinx.coroutines.delay
+import kotlin.math.ceil
 
 private fun phaseWord(type: PhaseType?): String = when (type) {
     PhaseType.INHALE -> "Breathe in"
@@ -87,25 +96,53 @@ fun SessionScreen(
                     onSkip = { viewModel.tagMood(null); onFinished() },
                 )
             } else {
-                BreathingGlyph(
-                    phase = state.phase,
-                    phaseDurationMs = state.phase?.durationMs ?: 4000L,
-                    reduceMotion = viewModel.reduceMotion,
-                    accent = Color(viewModel.config.accentColor),
-                    modifier = Modifier.size(260.dp),
-                )
+                val phase = state.phase
+                val phaseStartedAt = state.phaseStartedAtMs
+                var remainingMs by remember { mutableLongStateOf(0L) }
+                LaunchedEffect(phase, phaseStartedAt, state.completed) {
+                    while (phase != null && state.completed == null) {
+                        val elapsed = System.currentTimeMillis() - phaseStartedAt
+                        remainingMs = (phase.durationMs - elapsed).coerceAtLeast(0)
+                        delay(100)
+                    }
+                }
+
+                Box(contentAlignment = Alignment.Center) {
+                    BreathingGlyph(
+                        phase = phase,
+                        phaseDurationMs = phase?.durationMs ?: 4000L,
+                        reduceMotion = viewModel.reduceMotion,
+                        accent = Color(viewModel.config.accentColor),
+                        modifier = Modifier.size(260.dp),
+                    )
+                    CountdownRing(
+                        fractionRemaining = if (phase != null && phase.durationMs > 0) {
+                            remainingMs.toFloat() / phase.durationMs
+                        } else 0f,
+                        accent = Color(viewModel.config.accentColor),
+                        modifier = Modifier.size(300.dp),
+                    )
+                }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = phaseWord(state.phase?.type),
+                        text = phaseWord(phase?.type),
                         style = MaterialTheme.typography.displaySmall,
                         fontWeight = FontWeight.Light,
                         letterSpacing = 2.sp,
                     )
                     Text(
+                        text = if (phase != null && remainingMs > 0) {
+                            "${ceil(remainingMs / 1000.0).toInt()}"
+                        } else "",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = TextMuted,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                    Text(
                         text = viewModel.config.name,
                         style = MaterialTheme.typography.labelMedium,
                         color = TextMuted,
-                        modifier = Modifier.padding(top = 12.dp),
+                        modifier = Modifier.padding(top = 8.dp),
                     )
                 }
                 Button(
@@ -121,6 +158,27 @@ fun SessionScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CountdownRing(fractionRemaining: Float, accent: Color, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val stroke = 5.dp.toPx()
+        val inset = stroke / 2
+        val arcSize = Size(size.width - stroke, size.height - stroke)
+        drawArc(
+            color = accent.copy(alpha = 0.12f),
+            startAngle = -90f, sweepAngle = 360f, useCenter = false,
+            topLeft = Offset(inset, inset), size = arcSize, style = Stroke(stroke),
+        )
+        drawArc(
+            color = accent,
+            startAngle = -90f,
+            sweepAngle = 360f * fractionRemaining.coerceIn(0f, 1f),
+            useCenter = false,
+            topLeft = Offset(inset, inset), size = arcSize, style = Stroke(stroke),
+        )
     }
 }
 

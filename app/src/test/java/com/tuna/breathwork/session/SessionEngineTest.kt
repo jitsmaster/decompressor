@@ -40,19 +40,22 @@ class SessionEngineTest {
     }
 
     private class FakeHaptics : HapticDriver {
-        val fired = mutableListOf<HapticKind>()
-        override fun fire(kind: HapticKind) { fired += kind }
+        val starts = mutableListOf<Pair<HapticKind, Long>>()
+        override fun start(kind: HapticKind, durationMs: Long) { starts += kind to durationMs }
+        override fun stop() {}
     }
 
     private class RecordingSink : SessionSink {
         val phases = mutableListOf<Phase>()
         val cycles = mutableListOf<Pair<Int, Int>>()
+        val endings = mutableListOf<Phase>()
         var completed: SessionResult? = null
         var aborted = false
         override fun onPhase(phase: Phase) { phases += phase }
         override fun onCycle(cycle: Int, total: Int) { cycles += cycle to total }
         override fun onComplete(result: SessionResult) { completed = result }
         override fun onAbort() { aborted = true }
+        override fun onPhaseEnding(phase: Phase) { endings += phase }
     }
 
     private fun engine(scope: kotlinx.coroutines.CoroutineScope, voice: FakeVoice = FakeVoice(),
@@ -137,7 +140,10 @@ class SessionEngineTest {
         val voice = FakeVoice()
         engine(this, voice = voice, postureEnabled = true).start()
         advanceTimeBy(4 * 16_000); advanceUntilIdle() // 4 cycles → cue fires
-        val cueSpeaks = voice.ops.filter { it.contains("soft belly") || it.contains("shoulders drop") || it.contains("Unclench") || it.contains("through your neck") }
+        val cueSpeaks = voice.ops.filter {
+            it == "speak:Long spine" || it == "speak:Drop your shoulders" ||
+                it == "speak:Relax your jaw" || it == "speak:Lengthen your neck"
+        }
         assertEquals("exactly one posture cue after 4 cycles", 1, cueSpeaks.size)
     }
 
@@ -146,7 +152,10 @@ class SessionEngineTest {
         val voice = FakeVoice()
         engine(this, voice = voice, calmNow = true).start()
         advanceTimeBy(4 * 16_000); advanceUntilIdle()
-        val cueSpeaks = voice.ops.filter { it.contains("soft belly") || it.contains("shoulders drop") || it.contains("Unclench") || it.contains("through your neck") }
+        val cueSpeaks = voice.ops.filter {
+            it == "speak:Long spine" || it == "speak:Drop your shoulders" ||
+                it == "speak:Relax your jaw" || it == "speak:Lengthen your neck"
+        }
         assertEquals(0, cueSpeaks.size)
     }
 
@@ -161,13 +170,57 @@ class SessionEngineTest {
     }
 
     @Test
-    fun `haptics fire at phase starts per phase config`() = runTest {
+    fun `haptics start per phase with kind and duration`() = runTest {
         val haptics = FakeHaptics()
         engine(this, haptics = haptics).start()
         advanceTimeBy(8_000); runCurrent()
-        assertEquals(listOf(HapticKind.PULSE, HapticKind.NONE), haptics.fired.take(2))
+        assertEquals(
+            listOf(HapticKind.PULSE to 4000L, HapticKind.NONE to 4000L),
+            haptics.starts.filter { it.first != HapticKind.PRETICK }.take(2),
+        )
         advanceTimeBy(8_000); runCurrent()
-        assertEquals(listOf(HapticKind.PULSE, HapticKind.NONE, HapticKind.SOFT), haptics.fired.take(3))
+        assertEquals(
+            listOf(HapticKind.PULSE to 4000L, HapticKind.NONE to 4000L, HapticKind.SOFT to 4000L),
+            haptics.starts.filter { it.first != HapticKind.PRETICK }.take(3),
+        )
+    }
+
+    @Test
+    fun `pre-tick fires one second before each phase end`() = runTest {
+        val haptics = FakeHaptics()
+        val sink = RecordingSink()
+        engine(this, haptics = haptics, sink = sink).start()
+
+        advanceTimeBy(2_999); runCurrent()
+        assertEquals("no ending before the final second", 0, sink.endings.size)
+        advanceTimeBy(1); runCurrent()
+        assertEquals(1, sink.endings.size)
+        assertEquals(PhaseType.INHALE, sink.endings[0].type)
+        assertEquals(HapticKind.PRETICK, haptics.starts.last().first)
+
+        advanceTimeBy(999); runCurrent() // finish inhale phase
+        advanceTimeBy(2_999); runCurrent()
+        assertEquals(1, sink.endings.size)
+        advanceTimeBy(2); runCurrent() // HOLD pre-tick at 7000 ms
+        assertEquals(2, sink.endings.size)
+        assertEquals(PhaseType.HOLD, sink.endings[1].type)
+    }
+
+    @Test
+    fun `short phases skip the pre-tick`() = runTest {
+        val short = TechniqueConfig(
+            id = "short", name = "Short", zhName = "短", description = "",
+            phases = listOf(Phase(PhaseType.INHALE, 1_200, voicePhrase = "In")),
+            cycles = 2,
+            soundMode = SoundMode.THETA,
+        )
+        val sink = RecordingSink()
+        val haptics = FakeHaptics()
+        SessionEngine(short, FakeVoice(), haptics, sink, scope = this).start()
+        advanceTimeBy(2_400); advanceUntilIdle()
+        assertEquals(0, sink.endings.size)
+        assertEquals(2, sink.cycles.size)
+        assertEquals("no pre-tick haptics on short phases", 0, haptics.starts.count { it.first == HapticKind.PRETICK })
     }
 
     @Test

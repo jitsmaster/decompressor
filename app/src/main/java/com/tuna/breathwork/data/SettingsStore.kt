@@ -16,9 +16,11 @@ data class Settings(
     val voiceRate: Float = 0.70f,
     val voicePitch: Float = 0.55f,
     val hapticsEnabled: Boolean = true,      // practice mode
-    val calmNowHaptics: Boolean = false,     // Calm Now default off (SPEC D11)
+    val calmNowHaptics: Boolean = true,      // eyes-closed guidance default on
     val posturePromptsEnabled: Boolean = true,
     val reduceMotion: Boolean = false,
+    /** Soft tick in the final second of each phase. */
+    val countdownTicks: Boolean = true,
     /** Which technique Calm Now runs (SPEC D2 extension: switchable). */
     val calmNowTechniqueId: String = "sigh",
 )
@@ -30,9 +32,10 @@ class SettingsStore(private val context: Context) {
             voiceRate = prefs[Keys.VOICE_RATE] ?: 0.70f,
             voicePitch = prefs[Keys.VOICE_PITCH] ?: 0.55f,
             hapticsEnabled = prefs[Keys.HAPTICS] ?: true,
-            calmNowHaptics = prefs[Keys.CALM_NOW_HAPTICS] ?: false,
+            calmNowHaptics = prefs[Keys.CALM_NOW_HAPTICS] ?: true,
             posturePromptsEnabled = prefs[Keys.POSTURE] ?: true,
             reduceMotion = prefs[Keys.REDUCE_MOTION] ?: false,
+            countdownTicks = prefs[Keys.COUNTDOWN_TICKS] ?: true,
             calmNowTechniqueId = prefs[Keys.CALM_NOW_TECHNIQUE] ?: "sigh",
         )
     }
@@ -48,6 +51,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.CALM_NOW_HAPTICS] = next.calmNowHaptics
             prefs[Keys.POSTURE] = next.posturePromptsEnabled
             prefs[Keys.REDUCE_MOTION] = next.reduceMotion
+            prefs[Keys.COUNTDOWN_TICKS] = next.countdownTicks
             prefs[Keys.CALM_NOW_TECHNIQUE] = next.calmNowTechniqueId
         }
     }
@@ -59,6 +63,7 @@ class SettingsStore(private val context: Context) {
         val CALM_NOW_HAPTICS = booleanPreferencesKey("calm_now_haptics")
         val POSTURE = booleanPreferencesKey("posture_prompts")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
+        val COUNTDOWN_TICKS = booleanPreferencesKey("countdown_ticks")
         val CALM_NOW_TECHNIQUE = stringPreferencesKey("calm_now_technique")
     }
 }

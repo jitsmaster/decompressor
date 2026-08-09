@@ -11,6 +11,8 @@ import androidx.navigation.navArgument
 import com.tuna.breathwork.container
 import com.tuna.breathwork.data.Preset
 import com.tuna.breathwork.data.TechniquesRepository
+import com.tuna.breathwork.ui.ambient.AmbientScreen
+import com.tuna.breathwork.ui.ambient.AmbientViewModel
 import com.tuna.breathwork.ui.session.SessionScreen
 import com.tuna.breathwork.ui.session.SessionViewModel
 
@@ -21,6 +23,7 @@ object Routes {
     const val SESSION = "session/{id}?preset={preset}"
     const val SETTINGS = "settings"
     const val HISTORY = "history"
+    const val AMBIENT = "ambient"
 
     fun technique(id: String) = "technique/$id"
     fun session(id: String, preset: Preset) = "session/$id?preset=${preset.name}"
@@ -37,6 +40,7 @@ fun TunaNavHost(onCalmNow: () -> Unit) {
             HomeScreen(
                 onCalmNow = onCalmNow,
                 onLibrary = { nav.navigate(Routes.LIBRARY) },
+                onAmbient = { nav.navigate(Routes.AMBIENT) },
                 onHistory = { nav.navigate(Routes.HISTORY) },
                 onSettings = { nav.navigate(Routes.SETTINGS) },
             )
@@ -81,6 +85,10 @@ fun TunaNavHost(onCalmNow: () -> Unit) {
         }
         composable(Routes.HISTORY) {
             HistoryScreen(onBack = { nav.popBackStack() }, logStore = appContainer.logStore)
+        }
+        composable(Routes.AMBIENT) {
+            val vm: AmbientViewModel = viewModel()
+            AmbientScreen(onBack = { nav.popBackStack() }, viewModel = vm)
         }
     }
 }

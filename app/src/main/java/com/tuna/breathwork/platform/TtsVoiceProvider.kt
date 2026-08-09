@@ -34,17 +34,26 @@ class TtsVoiceProvider(context: Context, private val voiceRate: Float, private v
     private val idGen = AtomicInteger(0)
 
     private fun configureVoice() {
-        // 1. Pick the voice first (setLanguage would reset it; pitch/rate applied after).
-        val chosen = pickDeepMaleAmericanVoice()
-        if (chosen != null) {
-            android.util.Log.i("TunaVoice", "using voice: ${chosen.name} (${chosen.locale})")
-            runCatching { tts.setVoice(chosen) }.onFailure {
-                android.util.Log.w("TunaVoice", "setVoice failed, falling back to en_US", it)
-                runCatching { tts.setLanguage(Locale.US) }
+        // 1. Try candidates in order, honoring the engine's return code — setVoice does
+        //    NOT throw on rejection; it returns ERROR and silently falls back to the
+        //    engine default (often the female voice). So we must check every attempt.
+        val candidates = pickDeepMaleAmericanVoiceCandidates()
+        var applied = false
+        for (voice in candidates) {
+            val result = runCatching { tts.setVoice(voice) }.getOrDefault(TextToSpeech.ERROR)
+            if (result == TextToSpeech.SUCCESS) {
+                android.util.Log.i("TunaVoice", "voice applied: ${voice.name} (${voice.locale})")
+                applied = true
+                break
             }
-        } else {
-            android.util.Log.w("TunaVoice", "no en-US male voice found; using en_US locale default")
+            android.util.Log.w("TunaVoice", "voice rejected by engine: ${voice.name} (code $result)")
+        }
+        if (!applied) {
             runCatching { tts.setLanguage(Locale.US) }
+            android.util.Log.w(
+                "TunaVoice",
+                "no candidate voice accepted; engine default = ${runCatching { tts.defaultVoice?.name }.getOrNull() ?: "?"}"
+            )
         }
         // 2. Tone AFTER voice selection so nothing resets it.
         tts.setSpeechRate(voiceRate)
@@ -55,27 +64,42 @@ class TtsVoiceProvider(context: Context, private val voiceRate: Float, private v
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
         )
+        dumpAvailableVoices()
     }
 
-    private fun pickDeepMaleAmericanVoice(): android.speech.tts.Voice? {
-        val voices = runCatching { tts.voices }.getOrNull() ?: return null
+    /** Ordered candidates: offline en-US male-ish first, then any en-US, then any male. */
+    private fun pickDeepMaleAmericanVoiceCandidates(): List<android.speech.tts.Voice> {
+        val voices = runCatching { tts.voices }.getOrNull() ?: return emptyList()
         val enUs = voices.filter { v ->
             val l = v.locale
             l.language.equals("en", true) && (l.country.equals("US", true) || l.variant.contains("us", true))
         }
-        if (enUs.isEmpty()) return null
-        val offline = enUs.filter { !it.isNetworkConnectionRequired }
-        val pool = offline.ifEmpty { enUs }
-        // Male heuristic on engine name codes (Google: x-tpf = US male, x-sfg = US female).
-        val maleish = pool.filter {
-            val n = it.name.lowercase()
-            n.contains("male") || n.contains("tpf") || n.contains("usm") || n.contains("guy") || n.contains("daniel")
+        val maleHints = listOf("male", "tpf", "usm", "guy", "daniel")
+        val femaleHints = listOf("female", "sfg", "x-fem")
+        fun isMaleish(v: android.speech.tts.Voice) = maleHints.any { v.name.lowercase().contains(it) }
+        fun isFemaleish(v: android.speech.tts.Voice) = femaleHints.any { v.name.lowercase().contains(it) }
+
+        val ranked = enUs.sortedWith(
+            compareBy(
+                { it.isNetworkConnectionRequired },                    // offline first
+                { !isMaleish(it) },                                    // male first
+                { isFemaleish(it) },                                   // female last
+                { -it.quality },                                       // higher quality first
+            )
+        )
+        val anyMale = voices.filter(::isMaleish).sortedBy { it.isNetworkConnectionRequired }
+        return (ranked + anyMale).distinctBy { it.name }
+    }
+
+    private fun dumpAvailableVoices() {
+        runCatching {
+            tts.voices?.forEach { v ->
+                android.util.Log.i(
+                    "TunaVoice",
+                    "available: ${v.name} | ${v.locale} | net=${v.isNetworkConnectionRequired} | q=${v.quality} | ${v.features}"
+                )
+            }
         }
-        val noFemale = pool.filter {
-            val n = it.name.lowercase()
-            !n.contains("female") && !n.contains("sfg") && !n.contains("x-fem")
-        }
-        return maleish.firstOrNull() ?: noFemale.firstOrNull() ?: pool.firstOrNull()
     }
 
     init {

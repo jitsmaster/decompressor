@@ -20,9 +20,11 @@ import com.tuna.breathwork.domain.TechniqueConfig
 import com.tuna.breathwork.platform.AndroidHaptics
 import com.tuna.breathwork.platform.BinauralEngine
 import com.tuna.breathwork.platform.HeadphoneDetector
+import com.tuna.breathwork.platform.RecordedVoiceProvider
 import com.tuna.breathwork.platform.TtsVoiceProvider
 import com.tuna.breathwork.session.SessionEngine
 import com.tuna.breathwork.session.SessionSink
+import com.tuna.breathwork.session.VoiceProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +43,8 @@ data class SessionUiState(
     val aborted: Boolean = false,
     val headphoneStatus: HeadphoneStatus = HeadphoneStatus.CHECKING,
     val sessionStarted: Boolean = false,
+    /** Wall-clock time the current phase started — drives the countdown ring/seconds. */
+    val phaseStartedAtMs: Long = 0,
 )
 
 /**
@@ -62,7 +66,10 @@ class SessionViewModel(
     private val _state = MutableStateFlow(SessionUiState(totalCycles = config.cycles))
     val state: StateFlow<SessionUiState> = _state.asStateFlow()
 
-    private val voice: TtsVoiceProvider = TtsVoiceProvider(app, initialSettings.voiceRate, initialSettings.voicePitch)
+    private val voice: VoiceProvider = RecordedVoiceProvider(
+        app,
+        TtsVoiceProvider(app, initialSettings.voiceRate, initialSettings.voicePitch),
+    )
     private val haptics: AndroidHaptics = AndroidHaptics(
         app,
         enabled = if (calmNow) initialSettings.calmNowHaptics else initialSettings.hapticsEnabled,
@@ -84,6 +91,21 @@ class SessionViewModel(
     /** Completed session awaiting a mood tag; appended to the log once tagged or skipped. */
     private var pendingRecord: SessionRecord? = null
 
+    /** Tick sound for the phase-end countdown (bundled sfx/tick.mp3). */
+    private val tickPool = android.media.SoundPool.Builder()
+        .setMaxStreams(2)
+        .setAudioAttributes(
+            android.media.AudioAttributes.Builder()
+                .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+        )
+        .build()
+    private val tickId = runCatching {
+        tickPool.load(app.assets.openFd("sfx/tick.mp3"), 1)
+    }.getOrDefault(0)
+    private val playTicks = initialSettings.countdownTicks
+
     fun start() {
         if (_state.value.sessionStarted) return
         viewModelScope.launch {
@@ -93,7 +115,7 @@ class SessionViewModel(
                 it.copy(headphoneStatus = if (stereo) HeadphoneStatus.STEREO else HeadphoneStatus.MONO_FALLBACK)
             }
             if (!stereo) {
-                voice.speak("Put on your headphones for the binaural effect. I'll continue either way.")
+                voice.speakAndAwait("Put on headphones for the full effect. We'll continue either way.")
             }
             beats.start(spec = specFor(config.soundMode), stereo = stereo, onFocusLost = { engine.abort() })
             engine.start()
@@ -118,7 +140,7 @@ class SessionViewModel(
     // --- SessionSink ---
 
     override fun onPhase(phase: Phase) {
-        _state.update { it.copy(phase = phase) }
+        _state.update { it.copy(phase = phase, phaseStartedAtMs = System.currentTimeMillis()) }
     }
 
     override fun onCycle(cycle: Int, total: Int) {
@@ -134,6 +156,12 @@ class SessionViewModel(
             timestampEpochMs = System.currentTimeMillis(),
         )
         _state.update { it.copy(completed = result) }
+    }
+
+    override fun onPhaseEnding(phase: Phase) {
+        if (playTicks) {
+            tickPool.play(tickId, 0.5f, 0.5f, 1, 0, 1f)
+        }
     }
 
     override fun onAbort() {
@@ -154,8 +182,8 @@ class SessionViewModel(
             viewModelScope.launch { logStore.append(record.copy(moodTag = null)) }
             pendingRecord = null
         }
-        voice.shutdown()
         beats.stop()
+        tickPool.release()
         super.onCleared()
     }
 
