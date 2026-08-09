@@ -48,6 +48,8 @@ fun SessionScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    LaunchedEffect(Unit) { viewModel.start() }
+
     LaunchedEffect(state.completed, state.aborted) {
         // nothing to do; UI renders completion/abort states
     }

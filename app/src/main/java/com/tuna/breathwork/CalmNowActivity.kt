@@ -48,7 +48,6 @@ private fun CalmNowScreen(onFinished: () -> Unit, onAborted: () -> Unit) {
         key = "calm_now",
         factory = SessionViewModel.Factory(config, calmNow = true),
     )
-    androidx.compose.runtime.LaunchedEffect(Unit) { vm.start() }
     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(BgDeep)) {
         SessionScreen(viewModel = vm, onFinished = onFinished, onAborted = onAborted)
     }

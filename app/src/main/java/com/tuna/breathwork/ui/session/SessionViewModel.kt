@@ -83,6 +83,7 @@ class SessionViewModel(
     private var pendingRecord: SessionRecord? = null
 
     fun start() {
+        if (_state.value.sessionStarted) return
         viewModelScope.launch {
             _state.update { it.copy(headphoneStatus = HeadphoneStatus.CHECKING) }
             val stereo = withContext(Dispatchers.IO) { HeadphoneDetector(app).hasHeadphones() }
