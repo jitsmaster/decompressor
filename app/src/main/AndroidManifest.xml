@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
+        android:name=".TunaApp"
         android:label="吐纳 Tuna"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Tuna"
@@ -16,6 +17,37 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Calm Now: no back stack, single task, launched fresh from widget/tile -->
+        <activity
+            android:name=".CalmNowActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true" />
+
+        <!-- Home-screen widget -->
+        <receiver
+            android:name=".CalmNowWidgetReceiver"
+            android:exported="true"
+            android:label="吐纳 Calm Now">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/calm_now_widget_info" />
+        </receiver>
+
+        <!-- Quick-settings tile -->
+        <service
+            android:name=".CalmNowTileService"
+            android:exported="true"
+            android:label="吐纳 Calm Now"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
