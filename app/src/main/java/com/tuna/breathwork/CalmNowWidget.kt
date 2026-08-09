@@ -40,7 +40,7 @@ class CalmNowWidget : GlanceAppWidget() {
                 Column(
                     modifier = GlanceModifier
                         .fillMaxSize()
-                        .background(ColorProvider(Color(0xFF4FD1C5)))
+                        .background(ColorProvider(Color(0xFFB4A0E8)))
                         .padding(16.dp)
                         .clickable { pending.send() },
                     verticalAlignment = Alignment.Vertical.CenterVertically,

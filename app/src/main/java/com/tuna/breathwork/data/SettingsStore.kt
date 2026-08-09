@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -12,24 +13,27 @@ import kotlinx.coroutines.flow.map
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 
 data class Settings(
-    val voiceRate: Float = 0.75f,
-    val voicePitch: Float = 0.85f,
+    val voiceRate: Float = 0.70f,
+    val voicePitch: Float = 0.55f,
     val hapticsEnabled: Boolean = true,      // practice mode
     val calmNowHaptics: Boolean = false,     // Calm Now default off (SPEC D11)
     val posturePromptsEnabled: Boolean = true,
     val reduceMotion: Boolean = false,
+    /** Which technique Calm Now runs (SPEC D2 extension: switchable). */
+    val calmNowTechniqueId: String = "sigh",
 )
 
 class SettingsStore(private val context: Context) {
 
     val settings: Flow<Settings> = context.settingsDataStore.data.map { prefs ->
         Settings(
-            voiceRate = prefs[Keys.VOICE_RATE] ?: 0.75f,
-            voicePitch = prefs[Keys.VOICE_PITCH] ?: 0.85f,
+            voiceRate = prefs[Keys.VOICE_RATE] ?: 0.70f,
+            voicePitch = prefs[Keys.VOICE_PITCH] ?: 0.55f,
             hapticsEnabled = prefs[Keys.HAPTICS] ?: true,
             calmNowHaptics = prefs[Keys.CALM_NOW_HAPTICS] ?: false,
             posturePromptsEnabled = prefs[Keys.POSTURE] ?: true,
             reduceMotion = prefs[Keys.REDUCE_MOTION] ?: false,
+            calmNowTechniqueId = prefs[Keys.CALM_NOW_TECHNIQUE] ?: "sigh",
         )
     }
 
@@ -44,6 +48,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.CALM_NOW_HAPTICS] = next.calmNowHaptics
             prefs[Keys.POSTURE] = next.posturePromptsEnabled
             prefs[Keys.REDUCE_MOTION] = next.reduceMotion
+            prefs[Keys.CALM_NOW_TECHNIQUE] = next.calmNowTechniqueId
         }
     }
 
@@ -54,5 +59,6 @@ class SettingsStore(private val context: Context) {
         val CALM_NOW_HAPTICS = booleanPreferencesKey("calm_now_haptics")
         val POSTURE = booleanPreferencesKey("posture_prompts")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
+        val CALM_NOW_TECHNIQUE = stringPreferencesKey("calm_now_technique")
     }
 }

@@ -6,20 +6,20 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Dark, muted, low-stimulation palette (SPEC D10)
+// Dark, muted, low-stimulation palette (SPEC D10) — soothing lavender family, no green/cyan
 val BgDeep = Color(0xFF10131A)
 val BgSurface = Color(0xFF1A1F2A)
 val BgElevated = Color(0xFF222834)
-val TealAccent = Color(0xFF4FD1C5)
-val TealDim = Color(0xFF2E8F88)
+val Accent = Color(0xFFB4A0E8)      // soft lavender
+val AccentDim = Color(0xFF7C6BC0)   // deeper lavender for containers
 val TextPrimary = Color(0xFFE6EAF2)
 val TextMuted = Color(0xFF8A93A6)
 val DangerSoft = Color(0xFFB0564F)
 
 private val TunaDarkScheme = darkColorScheme(
-    primary = TealAccent,
+    primary = Accent,
     onPrimary = BgDeep,
-    primaryContainer = TealDim,
+    primaryContainer = AccentDim,
     onPrimaryContainer = TextPrimary,
     background = BgDeep,
     onBackground = TextPrimary,

@@ -68,7 +68,7 @@ fun TunaNavHost(onCalmNow: () -> Unit) {
             val config = TechniquesRepository.withPreset(TechniquesRepository.byId(id), preset)
             val vm: SessionViewModel = viewModel(
                 key = "session_${config.id}_${config.cycles}",
-                factory = SessionViewModel.Factory(config, calmNow = false),
+                factory = SessionViewModel.Factory(calmNow = false, techniqueId = id, preset = preset),
             )
             SessionScreen(
                 viewModel = vm,

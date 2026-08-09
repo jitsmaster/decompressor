@@ -43,10 +43,9 @@ class CalmNowActivity : ComponentActivity() {
 
 @Composable
 private fun CalmNowScreen(onFinished: () -> Unit, onAborted: () -> Unit) {
-    val config = TechniquesRepository.calmNow
     val vm: SessionViewModel = viewModel(
         key = "calm_now",
-        factory = SessionViewModel.Factory(config, calmNow = true),
+        factory = SessionViewModel.Factory(calmNow = true),
     )
     androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(BgDeep)) {
         SessionScreen(viewModel = vm, onFinished = onFinished, onAborted = onAborted)

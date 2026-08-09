@@ -55,7 +55,7 @@ data class TechniqueConfig(
     val phases: List<Phase>,
     val cycles: Int,
     val soundMode: SoundMode,
-    val accentColor: Long = 0xFF4FD1C5,
+    val accentColor: Long = 0xFFB4A0E8,
     val useCase: UseCase = UseCase.STRESS,
     /** Rotating per-cycle phrases (e.g. Liu Zi Jue's six sounds), spoken at cycle start. */
     val cycleSounds: List<String>? = null,

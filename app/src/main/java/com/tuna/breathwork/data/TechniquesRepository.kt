@@ -33,7 +33,7 @@ object TechniquesRepository {
         ),
         cycles = 12, // 120 s exactly — the Calm Now preset
         soundMode = SoundMode.THETA,
-        accentColor = 0xFF4FD1C5,
+        accentColor = 0xFFB4A0E8,
         useCase = UseCase.PANIC,
     )
 
@@ -50,7 +50,7 @@ object TechniquesRepository {
         ),
         cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 16_000),
         soundMode = SoundMode.ALPHA,
-        accentColor = 0xFFD9A05B,
+        accentColor = 0xFFD9A58B,
         useCase = UseCase.ANGER,
     )
 
@@ -66,7 +66,7 @@ object TechniquesRepository {
         ),
         cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 19_000),
         soundMode = SoundMode.THETA,
-        accentColor = 0xFF9B7EDE,
+        accentColor = 0xFF9DB8E8,
         useCase = UseCase.STRESS,
     )
 
@@ -81,7 +81,7 @@ object TechniquesRepository {
         ),
         cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 11_000),
         soundMode = SoundMode.THETA,
-        accentColor = 0xFF7FB069,
+        accentColor = 0xFFE2C79E,
         useCase = UseCase.BASELINE,
     )
 
@@ -96,7 +96,7 @@ object TechniquesRepository {
         ),
         cycles = 18, // six sounds × 3 rounds = 3 min
         soundMode = SoundMode.THETA,
-        accentColor = 0xFFE08BB1,
+        accentColor = 0xFFC79ED2,
         useCase = UseCase.SOUND,
         cycleSounds = listOf("Xu", "He", "Hu", "Si", "Chui", "Xi"),
     )

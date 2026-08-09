@@ -5,10 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.tuna.breathwork.TunaApp
 import com.tuna.breathwork.container
+import com.tuna.breathwork.data.Preset
 import com.tuna.breathwork.data.SessionLogStore
 import com.tuna.breathwork.data.SessionRecord
 import com.tuna.breathwork.data.Settings
 import com.tuna.breathwork.data.SettingsStore
+import com.tuna.breathwork.data.TechniquesRepository
 import com.tuna.breathwork.domain.BinauralSpec
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.Phase
@@ -164,8 +166,9 @@ class SessionViewModel(
         }
 
     class Factory(
-        private val config: TechniqueConfig,
         private val calmNow: Boolean,
+        private val techniqueId: String? = null,
+        private val preset: Preset = Preset.MEDIUM,
     ) : androidx.lifecycle.ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : androidx.lifecycle.ViewModel> create(
@@ -174,7 +177,17 @@ class SessionViewModel(
         ): T {
             val app = extras[androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
                 ?: error("SessionViewModel requires an Application")
-            return SessionViewModel(app, config, calmNow, (app as TunaApp).container.settings) as T
+            val settings = kotlinx.coroutines.runBlocking { (app as TunaApp).container.currentSettings() }
+            val config = if (calmNow) {
+                // Calm Now reads its technique from settings — switchable in the Settings screen.
+                TechniquesRepository.withPreset(
+                    TechniquesRepository.byId(settings.calmNowTechniqueId),
+                    Preset.CALM_NOW,
+                )
+            } else {
+                TechniquesRepository.withPreset(TechniquesRepository.byId(techniqueId!!), preset)
+            }
+            return SessionViewModel(app, config, calmNow, settings) as T
         }
     }
 }

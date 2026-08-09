@@ -11,7 +11,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * Android TTS behind the VoiceProvider seam. Slow rate + low pitch (tuned calm voice).
+ * Android TTS behind the VoiceProvider seam. Voice identity: deep male American English.
+ * Selection is heuristic (the public API exposes no gender): prefer an offline, en-US
+ * voice whose name doesn't look female, fall back to Locale.US, then to any male voice.
  * Streams on USAGE_MEDIA so it mixes with the binaural bed; [stop] flushes the queue
  * so a slow utterance never bleeds into the next phase.
  *
@@ -20,24 +22,61 @@ import kotlinx.coroutines.withTimeoutOrNull
  * would deadlock (and ANR) exactly like a CountDownLatch does. If the engine isn't
  * ready within 5 s, speech is skipped and the session continues visual-only.
  */
-class TtsVoiceProvider(context: Context, voiceRate: Float, voicePitch: Float) : VoiceProvider {
+class TtsVoiceProvider(context: Context, private val voiceRate: Float, private val voicePitch: Float) : VoiceProvider {
 
     private val ready = CompletableDeferred<Unit>()
     private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
         if (status == TextToSpeech.SUCCESS) {
-            tts.language = Locale.US
-            tts.setSpeechRate(voiceRate)
-            tts.setPitch(voicePitch)
-            tts.setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build()
-            )
+            configureVoice()
         }
         ready.complete(Unit)
     }
     private val idGen = AtomicInteger(0)
+
+    private fun configureVoice() {
+        // 1. Pick the voice first (setLanguage would reset it; pitch/rate applied after).
+        val chosen = pickDeepMaleAmericanVoice()
+        if (chosen != null) {
+            android.util.Log.i("TunaVoice", "using voice: ${chosen.name} (${chosen.locale})")
+            runCatching { tts.setVoice(chosen) }.onFailure {
+                android.util.Log.w("TunaVoice", "setVoice failed, falling back to en_US", it)
+                runCatching { tts.setLanguage(Locale.US) }
+            }
+        } else {
+            android.util.Log.w("TunaVoice", "no en-US male voice found; using en_US locale default")
+            runCatching { tts.setLanguage(Locale.US) }
+        }
+        // 2. Tone AFTER voice selection so nothing resets it.
+        tts.setSpeechRate(voiceRate)
+        tts.setPitch(voicePitch)
+        tts.setAudioAttributes(
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+        )
+    }
+
+    private fun pickDeepMaleAmericanVoice(): android.speech.tts.Voice? {
+        val voices = runCatching { tts.voices }.getOrNull() ?: return null
+        val enUs = voices.filter { v ->
+            val l = v.locale
+            l.language.equals("en", true) && (l.country.equals("US", true) || l.variant.contains("us", true))
+        }
+        if (enUs.isEmpty()) return null
+        val offline = enUs.filter { !it.isNetworkConnectionRequired }
+        val pool = offline.ifEmpty { enUs }
+        // Male heuristic on engine name codes (Google: x-tpf = US male, x-sfg = US female).
+        val maleish = pool.filter {
+            val n = it.name.lowercase()
+            n.contains("male") || n.contains("tpf") || n.contains("usm") || n.contains("guy") || n.contains("daniel")
+        }
+        val noFemale = pool.filter {
+            val n = it.name.lowercase()
+            !n.contains("female") && !n.contains("sfg") && !n.contains("x-fem")
+        }
+        return maleish.firstOrNull() ?: noFemale.firstOrNull() ?: pool.firstOrNull()
+    }
 
     init {
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {

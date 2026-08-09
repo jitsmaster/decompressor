@@ -5,16 +5,16 @@ import android.content.Context
 import com.tuna.breathwork.data.SessionLogStore
 import com.tuna.breathwork.data.Settings
 import com.tuna.breathwork.data.SettingsStore
-import kotlinx.coroutines.runBlocking
 
 /**
- * Tiny dependency container. Settings are cached at first use (DataStore prefs read —
- * a few ms); everything else is created on demand.
+ * Tiny dependency container. Settings are read fresh on demand (DataStore prefs read —
+ * a few ms) so the Calm Now technique switch and voice params never go stale.
  */
 class AppContainer(context: Context) {
     val settingsStore = SettingsStore(context)
     val logStore = SessionLogStore(context)
-    val settings: Settings by lazy { runBlocking { settingsStore.current() } }
+
+    suspend fun currentSettings(): Settings = settingsStore.current()
 }
 
 class TunaApp : Application() {

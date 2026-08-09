@@ -36,14 +36,17 @@ import kotlinx.coroutines.launch
 import com.tuna.breathwork.data.Preset
 import com.tuna.breathwork.data.TechniquesRepository
 import com.tuna.breathwork.data.SettingsStore
+import com.tuna.breathwork.data.UsageAnalytics
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.SoundMode
 import com.tuna.breathwork.domain.TechniqueConfig
 import com.tuna.breathwork.domain.UseCase
+import com.tuna.breathwork.ui.theme.Accent
+import com.tuna.breathwork.ui.theme.AccentDim
 import com.tuna.breathwork.ui.theme.BgDeep
+import com.tuna.breathwork.ui.theme.BgElevated
 import com.tuna.breathwork.ui.theme.BgSurface
 import com.tuna.breathwork.ui.theme.TextMuted
-import com.tuna.breathwork.ui.theme.TealAccent
 
 // ---------- Home ----------
 
@@ -71,7 +74,7 @@ fun HomeScreen(
             Surface(
                 onClick = onCalmNow,
                 shape = RoundedCornerShape(28.dp),
-                color = TealAccent,
+                color = Accent,
                 modifier = Modifier.fillMaxWidth().height(180.dp),
             ) {
                 Column(
@@ -223,6 +226,32 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
         Header("Settings", onBack)
         Spacer(Modifier.height(16.dp))
         val s = settings ?: return@Column
+
+        Text("Calm Now exercise", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+        Spacer(Modifier.height(8.dp))
+        TechniquesRepository.all.forEach { technique ->
+            val selected = s.calmNowTechniqueId == technique.id
+            Surface(
+                onClick = { scope.launch { settingsStore.update { it.copy(calmNowTechniqueId = technique.id) } } },
+                shape = RoundedCornerShape(16.dp),
+                color = if (selected) AccentDim else BgSurface,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier.size(12.dp).background(Color(technique.accentColor), CircleShape)
+                    )
+                    Spacer(Modifier.width(14.dp))
+                    Text("${technique.zhName} · ${technique.name}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Text(if (selected) "✓" else "", color = Accent)
+                }
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+
         ToggleRow("Haptic pulse (practice)", s.hapticsEnabled) {
             scope.launch { settingsStore.update { it.copy(hapticsEnabled = !it.hapticsEnabled) } }
         }
@@ -252,7 +281,7 @@ private fun ToggleRow(label: String, checked: Boolean, onToggle: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text(if (checked) "on" else "off", color = if (checked) TealAccent else TextMuted)
+            Text(if (checked) "on" else "off", color = if (checked) Accent else TextMuted)
         }
     }
 }
@@ -276,6 +305,46 @@ fun HistoryScreen(onBack: () -> Unit, logStore: com.tuna.breathwork.data.Session
             val trend = current.moodTrend(technique.id)
             if (trend.values.any { it > 0 }) {
                 TrendRow(technique, trend)
+            }
+        }
+
+        // ---- Insights: usage + mood analysis (SPEC extension: track usage, analyze mood) ----
+        val totals = UsageAnalytics.totals(current.records)
+        val distribution = UsageAnalytics.moodDistribution(current.records)
+        val calmRates = UsageAnalytics.calmRatePerTechnique(current.records)
+        val perDay = UsageAnalytics.sessionsPerDay(current.records, System.currentTimeMillis(), days = 7)
+
+        Spacer(Modifier.height(16.dp))
+        Text("Insights", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+        Spacer(Modifier.height(8.dp))
+        Surface(shape = RoundedCornerShape(16.dp), color = BgSurface, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    "${totals.sessionCount} sessions · ${totals.practiceMinutes} min practice" +
+                        (totals.mostUsedTechnique?.let { " · most: ${TechniquesRepository.byId(it).zhName}" } ?: ""),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    MoodTagText(MoodTag.CALM, distribution[MoodTag.CALM] ?: 0)
+                    MoodTagText(MoodTag.NEUTRAL, distribution[MoodTag.NEUTRAL] ?: 0)
+                    MoodTagText(MoodTag.STILL_STRESSED, distribution[MoodTag.STILL_STRESSED] ?: 0)
+                }
+                Text("Calm rate by technique", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+                calmRates.entries.sortedByDescending { it.value }.forEach { (id, rate) ->
+                    CalmRateBar(id, rate)
+                }
+                Text("Sessions · last 7 days", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    perDay.forEach { count ->
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = if (count > 0) AccentDim else BgElevated,
+                            modifier = Modifier
+                                .weight(1f)
+                                .height((14 + 10 * count).dp),
+                        ) {}
+                    }
+                }
             }
         }
         Spacer(Modifier.height(16.dp))
@@ -303,8 +372,7 @@ fun HistoryScreen(onBack: () -> Unit, logStore: com.tuna.breathwork.data.Session
 }
 
 @Composable
-private fun TrendRow(technique: TechniqueConfig, trend: Map<MoodTag, Int>) {
-    Surface(shape = RoundedCornerShape(14.dp), color = BgSurface, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+private fun TrendRow(technique: TechniqueConfig, trend: Map<MoodTag, Int>) {    Surface(shape = RoundedCornerShape(14.dp), color = BgSurface, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(technique.name, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             Text("😌${trend[MoodTag.CALM]}  😐${trend[MoodTag.NEUTRAL]}  😣${trend[MoodTag.STILL_STRESSED]}",
@@ -338,4 +406,38 @@ private fun moodLabel(tag: MoodTag): String = when (tag) {
     MoodTag.CALM -> "😌 calm"
     MoodTag.NEUTRAL -> "😐 neutral"
     MoodTag.STILL_STRESSED -> "😣 stressed"
+}
+
+@Composable
+private fun MoodTagText(tag: MoodTag, count: Int) {
+    Text("${moodEmoji(tag)} $count", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
+}
+
+@Composable
+private fun CalmRateBar(techniqueId: String, rate: Double) {
+    val technique = TechniquesRepository.byId(techniqueId)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(technique.name, style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.width(130.dp))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(8.dp)
+                .background(BgElevated, RoundedCornerShape(4.dp)),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(rate.toFloat())
+                    .height(8.dp)
+                    .background(Color(technique.accentColor), RoundedCornerShape(4.dp)),
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Text("${(rate * 100).toInt()}%", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+    }
+}
+
+private fun moodEmoji(tag: MoodTag): String = when (tag) {
+    MoodTag.CALM -> "😌"
+    MoodTag.NEUTRAL -> "😐"
+    MoodTag.STILL_STRESSED -> "😣"
 }
