@@ -1,5 +1,7 @@
 package com.tuna.breathwork.domain
 
+import kotlin.math.roundToInt
+
 enum class PhaseType { INHALE, HOLD, EXHALE, SOUND_EXHALE }
 
 enum class HapticKind { NONE, PULSE, SOFT }
@@ -55,6 +57,8 @@ data class TechniqueConfig(
     val soundMode: SoundMode,
     val accentColor: Long = 0xFF4FD1C5,
     val useCase: UseCase = UseCase.STRESS,
+    /** Rotating per-cycle phrases (e.g. Liu Zi Jue's six sounds), spoken at cycle start. */
+    val cycleSounds: List<String>? = null,
 ) {
     val totalDurationMs: Long
         get() = cycles * phases.sumOf { it.durationMs }
@@ -73,3 +77,7 @@ data class TechniqueConfig(
         }
     }
 }
+
+/** Round the number of cycles that best fills [targetMs] given one cycle of [cycleMs] (min 1). */
+fun cyclesForDuration(targetMs: Long, cycleMs: Long): Int =
+    ((targetMs.toDouble() / cycleMs).roundToInt()).coerceAtLeast(1)

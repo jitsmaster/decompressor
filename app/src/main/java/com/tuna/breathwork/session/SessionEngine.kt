@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /** Voice output boundary. `speak` enqueues and returns (non-blocking in real TTS). */
 interface VoiceProvider {
@@ -68,10 +69,14 @@ class SessionEngine(
             var cycle = 0
             while (cycle < config.cycles) {
                 val cue = if (postureEnabled) scheduler.cueForCycle(cycle) else null
+                val cycleSound = config.cycleSounds?.getOrNull(cycle % config.cycleSounds.size)
                 config.phases.forEachIndexed { index, phase ->
                     voice.stop()
                     phase.voicePhrase?.let { voice.speak(it) }
-                    if (index == 0) cue?.let { voice.speak(it) }
+                    if (index == 0) {
+                        cue?.let { voice.speak(it) }
+                        cycleSound?.let { voice.speak(it) }
+                    }
                     haptics.fire(phase.haptic)
                     sink.onPhase(phase)
                     delay(phase.durationMs)

@@ -169,4 +169,29 @@ class SessionEngineTest {
         advanceTimeBy(8_000); runCurrent()
         assertEquals(listOf(HapticKind.PULSE, HapticKind.NONE, HapticKind.SOFT), haptics.fired.take(3))
     }
+
+    @Test
+    fun `cycle sound rotation speaks each sound in order across cycles`() = runTest {
+        val liuzijue = TechniqueConfig(
+            id = "liuzijue", name = "Liu Zi Jue", zhName = "六字诀", description = "six healing sounds",
+            phases = listOf(
+                Phase(PhaseType.INHALE, 3000, voicePhrase = "Breathe in"),
+                Phase(PhaseType.SOUND_EXHALE, 7000, voicePhrase = "Exhale"),
+            ),
+            cycles = 6,
+            soundMode = SoundMode.THETA,
+            cycleSounds = listOf("Xu", "He", "Hu", "Si", "Chui", "Xi"),
+        )
+        val voice = FakeVoice()
+        val sink = RecordingSink()
+        val engine = SessionEngine(liuzijue, voice, FakeHaptics(), sink, scope = this)
+        engine.start()
+        advanceTimeBy(6 * 10_000); advanceUntilIdle()
+
+        val rotationSpeaks = voice.ops.filter { it.startsWith("speak:") }
+            .map { it.removePrefix("speak:") }
+            .filter { it in listOf("Xu", "He", "Hu", "Si", "Chui", "Xi") }
+        assertEquals(listOf("Xu", "He", "Hu", "Si", "Chui", "Xi"), rotationSpeaks)
+        assertEquals(6, sink.cycles.size)
+    }
 }
