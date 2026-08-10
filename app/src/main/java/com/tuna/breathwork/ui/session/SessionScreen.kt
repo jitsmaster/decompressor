@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,11 +32,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.PhaseType
+import com.tuna.breathwork.session.HeadphoneStatus
 import com.tuna.breathwork.ui.theme.BgDeep
 import com.tuna.breathwork.ui.theme.TextMuted
 import kotlinx.coroutines.delay
@@ -56,6 +59,14 @@ fun SessionScreen(
     onAborted: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Screen policy: allowScreenOff=true → user may switch the display off (wakelock keeps
+    // the rhythm); false → keep the screen on for the whole session.
+    val view = LocalView.current
+    DisposableEffect(viewModel.allowScreenOff) {
+        if (!viewModel.allowScreenOff) view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
 
     LaunchedEffect(Unit) { viewModel.start() }
 

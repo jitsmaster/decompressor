@@ -21,6 +21,8 @@ data class Settings(
     val reduceMotion: Boolean = false,
     /** Soft tick in the final second of each phase. */
     val countdownTicks: Boolean = true,
+    /** Screen may turn off during a session; a partial wakelock keeps the rhythm exact. */
+    val allowScreenOff: Boolean = true,
     /** Which technique Calm Now runs (SPEC D2 extension: switchable). */
     val calmNowTechniqueId: String = "sigh",
 )
@@ -36,6 +38,7 @@ class SettingsStore(private val context: Context) {
             posturePromptsEnabled = prefs[Keys.POSTURE] ?: true,
             reduceMotion = prefs[Keys.REDUCE_MOTION] ?: false,
             countdownTicks = prefs[Keys.COUNTDOWN_TICKS] ?: true,
+            allowScreenOff = prefs[Keys.ALLOW_SCREEN_OFF] ?: true,
             calmNowTechniqueId = prefs[Keys.CALM_NOW_TECHNIQUE] ?: "sigh",
         )
     }
@@ -52,6 +55,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.POSTURE] = next.posturePromptsEnabled
             prefs[Keys.REDUCE_MOTION] = next.reduceMotion
             prefs[Keys.COUNTDOWN_TICKS] = next.countdownTicks
+            prefs[Keys.ALLOW_SCREEN_OFF] = next.allowScreenOff
             prefs[Keys.CALM_NOW_TECHNIQUE] = next.calmNowTechniqueId
         }
     }
@@ -64,6 +68,7 @@ class SettingsStore(private val context: Context) {
         val POSTURE = booleanPreferencesKey("posture_prompts")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
         val COUNTDOWN_TICKS = booleanPreferencesKey("countdown_ticks")
+        val ALLOW_SCREEN_OFF = booleanPreferencesKey("allow_screen_off")
         val CALM_NOW_TECHNIQUE = stringPreferencesKey("calm_now_technique")
     }
 }

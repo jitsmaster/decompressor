@@ -27,11 +27,11 @@ object TechniquesRepository {
         zhName = "生理叹息",
         description = "Double inhale, long exhale — the fastest acute calm (Stanford 2023).",
         phases = listOf(
-            Phase(PhaseType.INHALE, 2_200, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.INHALE, 2_200, "and in"),
+            Phase(PhaseType.INHALE, 2_600, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.INHALE, 2_600, "and in"),
             Phase(PhaseType.EXHALE, 7_000, "Let it all out", haptic = HapticKind.SOFT),
         ),
-        cycles = 10, // 11.4 s × 10 ≈ 1:54 — the Calm Now preset
+        cycles = 10, // 12.2 s × 10 ≈ 2:02 — the Calm Now preset
         soundMode = SoundMode.THETA,
         accentColor = 0xFFB4A0E8,
         useCase = UseCase.PANIC,
@@ -44,9 +44,9 @@ object TechniquesRepository {
         description = "4-4-4-4. Structured counting that interrupts rising anger (SEAL technique).",
         phases = listOf(
             Phase(PhaseType.INHALE, 4_000, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.HOLD, 4_000, "Hold"),
+            Phase(PhaseType.HOLD, 4_000, haptic = HapticKind.NONE), // silent — the countdown + pre-tick carry the timing
             Phase(PhaseType.EXHALE, 4_000, "Breathe out", haptic = HapticKind.SOFT),
-            Phase(PhaseType.HOLD, 4_000, "Hold"),
+            Phase(PhaseType.HOLD, 4_000, haptic = HapticKind.NONE), // silent hold hosts the posture cue
         ),
         cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 16_000),
         soundMode = SoundMode.ALPHA,

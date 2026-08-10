@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".TunaApp"
@@ -26,6 +30,12 @@
             android:exported="false"
             android:launchMode="singleTask"
             android:excludeFromRecents="true" />
+
+        <!-- Owns the running session so it survives screen-off / activity teardown -->
+        <service
+            android:name=".session.SessionService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
 
         <!-- Home-screen widget -->
         <receiver

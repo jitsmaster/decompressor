@@ -25,9 +25,9 @@ class SessionEngineTest {
         description = "4-4-4-4",
         phases = listOf(
             Phase(PhaseType.INHALE, 4000, voicePhrase = "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.HOLD, 4000, voicePhrase = "Hold"),
+            Phase(PhaseType.HOLD, 4000),
             Phase(PhaseType.EXHALE, 4000, voicePhrase = "Breathe out", haptic = HapticKind.SOFT),
-            Phase(PhaseType.HOLD, 4000, voicePhrase = "Hold"),
+            Phase(PhaseType.HOLD, 4000),
         ),
         cycles = 4,
         soundMode = SoundMode.ALPHA,
@@ -183,6 +183,40 @@ class SessionEngineTest {
             listOf(HapticKind.PULSE to 4000L, HapticKind.NONE to 4000L, HapticKind.SOFT to 4000L),
             haptics.starts.filter { it.first != HapticKind.PRETICK }.take(3),
         )
+    }
+
+    @Test
+    fun `posture cue rides the quiet hold after the exhale in box`() = runTest {
+        val voice = FakeVoice()
+        engine(this, voice = voice).start()
+        advanceTimeBy(4 * 16_000); advanceUntilIdle()
+        val ops = voice.ops
+        val cueAt = ops.indexOf("speak:Long spine")
+        // The cue rides the hold that follows the exhale: ...Breathe out, stop, Long spine
+        assertTrue("cue should follow the exhale phrase via the hold's stop (ops around $cueAt: ${ops.subList((cueAt - 2).coerceAtLeast(0), cueAt + 1)})",
+            cueAt >= 2 && ops[cueAt - 1] == "stop" && ops[cueAt - 2] == "speak:Breathe out")
+    }
+
+    @Test
+    fun `posture cue rides the long exhale when no quiet hold follows`() = runTest {
+        val sighLike = TechniqueConfig(
+            id = "sigh", name = "Sigh", zhName = "叹息", description = "",
+            phases = listOf(
+                Phase(PhaseType.INHALE, 2_600, voicePhrase = "Breathe in"),
+                Phase(PhaseType.INHALE, 2_600, voicePhrase = "and in"),
+                Phase(PhaseType.EXHALE, 7_000, voicePhrase = "Let it all out"),
+            ),
+            cycles = 4,
+            soundMode = SoundMode.THETA,
+        )
+        val voice = FakeVoice()
+        SessionEngine(sighLike, voice, FakeHaptics(), RecordingSink(), scope = this).start()
+        advanceTimeBy(4 * 12_200); advanceUntilIdle()
+        val ops = voice.ops
+        val cueAt = ops.indexOf("speak:Long spine")
+        val outAt = ops.lastIndexOf("speak:Let it all out")
+        assertTrue("cue should queue right after the exhale phrase (out at $outAt, cue at $cueAt)",
+            cueAt == outAt + 1)
     }
 
     @Test

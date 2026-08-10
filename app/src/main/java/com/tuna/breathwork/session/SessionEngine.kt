@@ -120,12 +120,22 @@ class SessionEngine(
         }
     }
 
+    /**
+     * Where the posture cue / cycle sound rides: prefer a quiet hold right after the
+     * exhale (room to breathe, no phrase to collide with), else the longest
+     * EXHALE/SOUND_EXHALE, else the longest phase.
+     */
     private fun cuePhaseIndex(config: TechniqueConfig): Int {
+        val exhaleIdx = config.phases.indexOfFirst { it.type == PhaseType.EXHALE || it.type == PhaseType.SOUND_EXHALE }
+        if (exhaleIdx >= 0 && exhaleIdx + 1 < config.phases.size) {
+            val next = config.phases[exhaleIdx + 1]
+            if (next.voicePhrase == null && next.durationMs >= 3_000) return exhaleIdx + 1
+        }
         val maxDur = config.phases.maxOf { it.durationMs }
-        val exhaleIdx = config.phases.indexOfFirst {
+        val longExhale = config.phases.indexOfFirst {
             it.durationMs == maxDur && (it.type == PhaseType.EXHALE || it.type == PhaseType.SOUND_EXHALE)
         }
-        return if (exhaleIdx >= 0) exhaleIdx else config.phases.indexOfFirst { it.durationMs == maxDur }
+        return if (longExhale >= 0) longExhale else config.phases.indexOfFirst { it.durationMs == maxDur }
     }
 
     companion object {

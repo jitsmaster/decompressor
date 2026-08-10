@@ -279,6 +279,9 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
         ToggleRow("Countdown ticks", s.countdownTicks) {
             scope.launch { settingsStore.update { it.copy(countdownTicks = !it.countdownTicks) } }
         }
+        ToggleRow("Allow screen off during sessions", s.allowScreenOff) {
+            scope.launch { settingsStore.update { it.copy(allowScreenOff = !it.allowScreenOff) } }
+        }
         ToggleRow("Reduce motion", s.reduceMotion) {
             scope.launch { settingsStore.update { it.copy(reduceMotion = !it.reduceMotion) } }
         }

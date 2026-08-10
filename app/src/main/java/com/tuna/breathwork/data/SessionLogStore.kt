@@ -32,6 +32,17 @@ class SessionLogStore(private val context: Context) {
         }
     }
 
+    /** Set/clear the mood on an existing record (the completion record is written immediately). */
+    suspend fun updateMood(timestampEpochMs: Long, mood: com.tuna.breathwork.domain.MoodTag?) {
+        val current = log.first()
+        val updated = current.records.map {
+            if (it.timestampEpochMs == timestampEpochMs) it.copy(moodTag = mood) else it
+        }
+        context.logDataStore.edit { prefs ->
+            prefs[Keys.LOG] = json.encodeToString(updated)
+        }
+    }
+
     private object Keys {
         val LOG = stringPreferencesKey("records_json")
     }
