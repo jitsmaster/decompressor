@@ -1,82 +1,180 @@
 [
  {
-  "id": "intro_practice",
-  "text": "Settle in. Long spine, soft shoulders, relaxed jaw.",
-  "durationMs": 9661
- },
- {
-  "id": "intro_calmnow",
-  "text": "Begin. Breathe with me.",
-  "durationMs": 5664
- },
- {
-  "id": "headphone_reminder",
-  "text": "Put on headphones for the full effect.",
-  "durationMs": 5088
- },
- {
   "id": "phrase_breathe_in",
-  "text": "Breathe in",
-  "durationMs": 2749
+  "en": {
+   "text": "Breathe in",
+   "file": "phrase_breathe_in_en.mp3",
+   "durationMs": 2749
+  },
+  "zh": {
+   "text": "吸气",
+   "file": "phrase_breathe_in_zh.mp3",
+   "durationMs": 2378
+  }
  },
  {
   "id": "phrase_and_in",
-  "text": "and in",
-  "durationMs": 2656
+  "en": {
+   "text": "and in",
+   "file": "phrase_and_in_en.mp3",
+   "durationMs": 2656
+  },
+  "zh": {
+   "text": "再吸一点",
+   "file": "phrase_and_in_zh.mp3",
+   "durationMs": 2749
+  }
  },
  {
   "id": "phrase_hold",
-  "text": "Hold",
-  "durationMs": 2557
+  "en": {
+   "text": "Hold",
+   "file": "phrase_hold_en.mp3",
+   "durationMs": 2557
+  },
+  "zh": {
+   "text": "屏住",
+   "file": "phrase_hold_zh.mp3",
+   "durationMs": 2342
+  }
  },
  {
   "id": "phrase_breathe_out",
-  "text": "Breathe out",
-  "durationMs": 2941
+  "en": {
+   "text": "Breathe out",
+   "file": "phrase_breathe_out_en.mp3",
+   "durationMs": 2941
+  },
+  "zh": {
+   "text": "呼气",
+   "file": "phrase_breathe_out_zh.mp3",
+   "durationMs": 2357
+  }
  },
  {
   "id": "phrase_let_it_all_out",
-  "text": "Let it all out",
-  "durationMs": 3389
+  "en": {
+   "text": "Let it all out",
+   "file": "phrase_let_it_all_out_en.mp3",
+   "durationMs": 3389
+  },
+  "zh": {
+   "text": "全部呼出",
+   "file": "phrase_let_it_all_out_zh.mp3",
+   "durationMs": 2813
+  }
  },
  {
   "id": "phrase_let_it_go",
-  "text": "Let it go",
-  "durationMs": 3040
+  "en": {
+   "text": "Let it go",
+   "file": "phrase_let_it_go_en.mp3",
+   "durationMs": 3040
+  },
+  "zh": {
+   "text": "放松",
+   "file": "phrase_let_it_go_zh.mp3",
+   "durationMs": 2344
+  }
  },
  {
   "id": "phrase_exhale",
-  "text": "Exhale",
-  "durationMs": 2813
+  "en": {
+   "text": "Exhale",
+   "file": "phrase_exhale_en.mp3",
+   "durationMs": 2813
+  },
+  "zh": {
+   "text": "呼气",
+   "file": "phrase_exhale_zh.mp3",
+   "durationMs": 2343
+  }
+ },
+ {
+  "id": "intro_practice",
+  "en": {
+   "text": "Settle in. Long spine, soft shoulders, relaxed jaw.",
+   "file": "intro_practice_en.mp3",
+   "durationMs": 9661
+  },
+  "zh": {
+   "text": "背挺直，肩膀放松。",
+   "file": "intro_practice_zh.mp3",
+   "durationMs": 4413
+  }
+ },
+ {
+  "id": "intro_calmnow",
+  "en": {
+   "text": "Begin. Breathe with me.",
+   "file": "intro_calmnow_en.mp3",
+   "durationMs": 5664
+  },
+  "zh": {
+   "text": "开始。跟我一起呼吸。",
+   "file": "intro_calmnow_zh.mp3",
+   "durationMs": 5437
+  }
+ },
+ {
+  "id": "headphone_reminder",
+  "en": {
+   "text": "Put on headphones for the full effect.",
+   "file": "headphone_reminder_en.mp3",
+   "durationMs": 5088
+  },
+  "zh": {
+   "text": "戴上耳机效果更好。",
+   "file": "headphone_reminder_zh.mp3",
+   "durationMs": 4349
+  }
  },
  {
   "id": "sound_xu",
-  "text": "嘘",
-  "durationMs": 2343
+  "en": {
+   "text": "嘘",
+   "file": "sound_xu_en.mp3",
+   "durationMs": 2343
+  }
  },
  {
   "id": "sound_he",
-  "text": "呵",
-  "durationMs": 2344
+  "en": {
+   "text": "呵",
+   "file": "sound_he_en.mp3",
+   "durationMs": 2344
+  }
  },
  {
   "id": "sound_hu",
-  "text": "呼",
-  "durationMs": 2342
+  "en": {
+   "text": "呼",
+   "file": "sound_hu_en.mp3",
+   "durationMs": 2342
+  }
  },
  {
   "id": "sound_si",
-  "text": "嘶",
-  "durationMs": 2342
+  "en": {
+   "text": "嘶",
+   "file": "sound_si_en.mp3",
+   "durationMs": 2342
+  }
  },
  {
   "id": "sound_chui",
-  "text": "吹",
-  "durationMs": 2342
+  "en": {
+   "text": "吹",
+   "file": "sound_chui_en.mp3",
+   "durationMs": 2342
+  }
  },
  {
   "id": "sound_xi",
-  "text": "嘻",
-  "durationMs": 2342
+  "en": {
+   "text": "嘻",
+   "file": "sound_xi_en.mp3",
+   "durationMs": 2342
+  }
  }
 ]

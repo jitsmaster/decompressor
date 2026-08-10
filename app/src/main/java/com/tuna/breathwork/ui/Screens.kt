@@ -22,9 +22,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import com.tuna.breathwork.data.Preset
+import com.tuna.breathwork.data.VoiceLanguage
 import com.tuna.breathwork.data.TechniquesRepository
 import com.tuna.breathwork.data.SettingsStore
 import com.tuna.breathwork.data.UsageAnalytics
@@ -41,12 +46,14 @@ import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.SoundMode
 import com.tuna.breathwork.domain.TechniqueConfig
 import com.tuna.breathwork.domain.UseCase
+import com.tuna.breathwork.platform.VoiceSampler
 import com.tuna.breathwork.ui.theme.Accent
 import com.tuna.breathwork.ui.theme.AccentDim
 import com.tuna.breathwork.ui.theme.BgDeep
 import com.tuna.breathwork.ui.theme.BgElevated
 import com.tuna.breathwork.ui.theme.BgSurface
 import com.tuna.breathwork.ui.theme.TextMuted
+import com.tuna.breathwork.ui.theme.TextPrimary
 
 // ---------- Home ----------
 
@@ -237,10 +244,56 @@ private fun SoundModeRow(mode: SoundMode) {
 fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
     val settings by settingsStore.settings.collectAsState(initial = null)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var sampler by remember { mutableStateOf<VoiceSampler?>(null) }
+    DisposableEffect(Unit) {
+        onDispose { sampler?.stop() }
+    }
     Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
         Header("Settings", onBack)
         Spacer(Modifier.height(16.dp))
         val s = settings ?: return@Column
+
+        Text("Voice", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+        Spacer(Modifier.height(8.dp))
+        VoiceLanguage.entries.forEach { lang ->
+            val selected = s.voiceLanguage == lang.key
+            Surface(
+                onClick = {
+                    scope.launch { settingsStore.update { it.copy(voiceLanguage = lang.key) } }
+                    sampler?.stop()
+                    sampler = VoiceSampler(context, lang)
+                    sampler?.play()
+                },
+                shape = RoundedCornerShape(16.dp),
+                color = if (selected) AccentDim else BgSurface,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(lang.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Text(if (selected) "✓" else "", color = Accent)
+                }
+            }
+        }
+        Surface(
+            onClick = {
+                val lang = VoiceLanguage.fromKey(s.voiceLanguage)
+                sampler?.stop()
+                sampler = VoiceSampler(context, lang)
+                sampler?.play()
+            },
+            shape = RoundedCornerShape(16.dp),
+            color = AccentDim,
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        ) {
+            Box(modifier = Modifier.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
+                Text("▶ Test voice", color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        Spacer(Modifier.height(20.dp))
 
         Text("Calm Now exercise", style = MaterialTheme.typography.labelLarge, color = TextMuted)
         Spacer(Modifier.height(8.dp))

@@ -7,6 +7,7 @@ import com.tuna.breathwork.TunaApp
 import com.tuna.breathwork.container
 import com.tuna.breathwork.data.Preset
 import com.tuna.breathwork.data.Settings
+import com.tuna.breathwork.data.VoiceLanguage
 import com.tuna.breathwork.data.TechniquesRepository
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.TechniqueConfig
@@ -30,6 +31,9 @@ class SessionViewModel(
     private val app = application
 
     val reduceMotion: Boolean = initialSettings.reduceMotion
+
+    /** Active guidance language — drives the on-screen phase words. */
+    val language: VoiceLanguage = VoiceLanguage.fromKey(initialSettings.voiceLanguage)
 
     /** Screen may turn off; the service's wakelock keeps the rhythm exact while off. */
     val allowScreenOff: Boolean = initialSettings.allowScreenOff

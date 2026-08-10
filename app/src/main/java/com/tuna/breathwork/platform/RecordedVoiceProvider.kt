@@ -3,6 +3,7 @@ package com.tuna.breathwork.platform
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import com.tuna.breathwork.data.VoiceLanguage
 import com.tuna.breathwork.session.VoiceProvider
 import java.util.ArrayDeque
 import kotlinx.coroutines.CompletableDeferred
@@ -15,19 +16,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
- * Plays the bundled recorded phrase clips (assets/phrases — generated from
- * Microsoft Edge neural voices, deep male US + Mandarin male for the six sounds)
- * in a strict sequential queue, exactly like a voice track. Unmapped phrases fall
- * back to [fallback] (TTS). [stop] flushes the queue instantly so a phrase never
- * bleeds into the next phase.
+ * Plays the bundled recorded phrase clips (assets/phrases — generated from Microsoft
+ * Edge neural voices: JennyNeural EN / XiaoxiaoNeural ZH, warm female — matching the
+ * UCLA ambient voices) in a strict sequential queue, exactly like a voice track.
+ * The active language's clips are used; unmapped phrases fall back to [fallback]
+ * (TTS). [stop] flushes the queue instantly so a phrase never bleeds into the next
+ * phase.
  */
 class RecordedVoiceProvider(
     private val context: Context,
     private val fallback: VoiceProvider,
+    private val language: VoiceLanguage = VoiceLanguage.EN,
 ) : VoiceProvider {
 
     @Serializable
-    private data class PhraseManifest(val id: String, val text: String, val durationMs: Long = 0)
+    private data class PhraseManifest(val id: String, val en: VoiceVariant?, val zh: VoiceVariant? = null)
+
+    @Serializable
+    private data class VoiceVariant(val text: String, val file: String, val durationMs: Long = 0)
 
     private val lock = Any()
     private val queue = ArrayDeque<String>() // asset paths
@@ -37,18 +43,32 @@ class RecordedVoiceProvider(
     /** Bumped by [stop] to invalidate any in-flight prepare/start — closes the overlap race. */
     private var generation = 0
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    /** normalized phrase text → (asset path, clip duration ms) */
-    private val clipByText: Map<String, Pair<String, Long>> = runCatching {
+    /** language key → normalized phrase text → (asset path, clip duration ms) */
+    private val clipByText: Map<String, Map<String, Pair<String, Long>>> = runCatching {
         val json = context.assets.open("phrases/manifest.json").bufferedReader().use { it.readText() }
-        Json.decodeFromString<List<PhraseManifest>>(json)
-            .associate { normalize(it.text) to ("phrases/${it.id}.mp3" to it.durationMs) }
+        val entries = Json.decodeFromString<List<PhraseManifest>>(json)
+        val byLang = VoiceLanguage.entries.associate { lang ->
+            lang.key to entries.mapNotNull { entry ->
+                val variant = when (lang) {
+                    VoiceLanguage.EN -> entry.en
+                    VoiceLanguage.ZH -> entry.zh
+                }
+                variant?.let { normalize(it.text) to ("phrases/${it.file}" to it.durationMs) }
+            }.toMap()
+        }
+        // Sounds exist only as EN entries; make them available to ZH sessions too.
+        val enOnly = byLang.getValue("en") - byLang.getValue("zh").keys
+        byLang + ("zh" to (byLang.getValue("zh") + enOnly))
     }.getOrDefault(emptyMap())
 
+    private val activeClips: Map<String, Pair<String, Long>> =
+        clipByText[language.key] ?: clipByText["en"] ?: emptyMap()
+
     override suspend fun clipDurationMs(phrase: String): Long? =
-        clipByText[normalize(phrase)]?.second
+        activeClips[normalize(phrase)]?.second
 
     override suspend fun speak(phrase: String) {
-        val entry = clipByText[normalize(phrase)]
+        val entry = activeClips[normalize(phrase)]
         if (entry == null) {
             android.util.Log.w("TunaVoice", "no recorded clip for phrase: \"$phrase\" — falling back to TTS")
             fallback.speak(phrase)
@@ -60,7 +80,7 @@ class RecordedVoiceProvider(
 
     /** Speak and don't return until the clip has finished playing (used for the headphone reminder). */
     override suspend fun speakAndAwait(phrase: String) {
-        val path = clipByText[normalize(phrase)]?.first
+        val path = activeClips[normalize(phrase)]?.first
         if (path == null) {
             android.util.Log.w("TunaVoice", "no recorded clip for phrase: \"$phrase\" — falling back to TTS")
             fallback.speak(phrase)

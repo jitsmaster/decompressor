@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tuna.breathwork.data.VoiceLanguage
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.PhaseType
 import com.tuna.breathwork.session.HeadphoneStatus
@@ -44,12 +45,19 @@ import com.tuna.breathwork.ui.theme.TextMuted
 import kotlinx.coroutines.delay
 import kotlin.math.ceil
 
-private fun phaseWord(type: PhaseType?): String = when (type) {
-    PhaseType.INHALE -> "Breathe in"
-    PhaseType.HOLD -> "Hold"
-    PhaseType.EXHALE -> "Breathe out"
-    PhaseType.SOUND_EXHALE -> "Exhale"
-    null -> "Begin"
+private fun phaseWord(type: PhaseType?, language: VoiceLanguage): String = when (language) {
+    VoiceLanguage.ZH -> when (type) {
+        PhaseType.INHALE -> "吸气"
+        PhaseType.HOLD -> "屏住"
+        PhaseType.EXHALE, PhaseType.SOUND_EXHALE -> "呼气"
+        null -> "开始"
+    }
+    VoiceLanguage.EN -> when (type) {
+        PhaseType.INHALE -> "Breathe in"
+        PhaseType.HOLD -> "Hold"
+        PhaseType.EXHALE, PhaseType.SOUND_EXHALE -> "Breathe out"
+        null -> "Begin"
+    }
 }
 
 @Composable
@@ -143,7 +151,7 @@ fun SessionScreen(
                     if (voiceCue) {
                         // Heads-up: the voice is speaking — get ready; the breath starts when it ends.
                         Text(
-                            text = "${phaseWord(phase?.type)}…",
+                            text = "${phaseWord(phase?.type, viewModel.language)}…",
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Light,
                             letterSpacing = 2.sp,
@@ -157,7 +165,7 @@ fun SessionScreen(
                         )
                     } else {
                         Text(
-                            text = phaseWord(phase?.type),
+                            text = phaseWord(phase?.type, viewModel.language),
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Light,
                             letterSpacing = 2.sp,

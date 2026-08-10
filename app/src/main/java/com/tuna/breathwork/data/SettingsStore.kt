@@ -24,6 +24,8 @@ data class Settings(
     val allowScreenOff: Boolean = true,
     /** Which technique Calm Now runs (SPEC D2 extension: switchable). */
     val calmNowTechniqueId: String = "sigh",
+    /** Session guidance language: "en" or "zh". */
+    val voiceLanguage: String = "en",
 )
 
 class SettingsStore(private val context: Context) {
@@ -38,6 +40,7 @@ class SettingsStore(private val context: Context) {
             countdownTicks = prefs[Keys.COUNTDOWN_TICKS] ?: true,
             allowScreenOff = prefs[Keys.ALLOW_SCREEN_OFF] ?: true,
             calmNowTechniqueId = prefs[Keys.CALM_NOW_TECHNIQUE] ?: "sigh",
+            voiceLanguage = prefs[Keys.VOICE_LANGUAGE] ?: "en",
         )
     }
 
@@ -54,6 +57,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.COUNTDOWN_TICKS] = next.countdownTicks
             prefs[Keys.ALLOW_SCREEN_OFF] = next.allowScreenOff
             prefs[Keys.CALM_NOW_TECHNIQUE] = next.calmNowTechniqueId
+            prefs[Keys.VOICE_LANGUAGE] = next.voiceLanguage
         }
     }
 
@@ -66,5 +70,6 @@ class SettingsStore(private val context: Context) {
         val COUNTDOWN_TICKS = booleanPreferencesKey("countdown_ticks")
         val ALLOW_SCREEN_OFF = booleanPreferencesKey("allow_screen_off")
         val CALM_NOW_TECHNIQUE = stringPreferencesKey("calm_now_technique")
+        val VOICE_LANGUAGE = stringPreferencesKey("voice_language")
     }
 }

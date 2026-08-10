@@ -20,6 +20,7 @@ import com.tuna.breathwork.data.Preset
 import com.tuna.breathwork.data.SessionLogStore
 import com.tuna.breathwork.data.SessionRecord
 import com.tuna.breathwork.data.TechniquesRepository
+import com.tuna.breathwork.data.VoiceLanguage
 import com.tuna.breathwork.domain.BinauralSpec
 import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.Phase
@@ -116,9 +117,12 @@ class SessionService : Service(), SessionSink {
             TechniquesRepository.withPreset(TechniquesRepository.byId(techniqueId!!), preset)
         }
 
+        val language = VoiceLanguage.fromKey(settings.voiceLanguage)
+        android.util.Log.i("TunaVoice", "session language: ${language.key}")
         voice = RecordedVoiceProvider(
             this,
             TtsVoiceProvider(this, settings.voiceRate, settings.voicePitch),
+            language = language,
         )
         haptics = AndroidHaptics(this, enabled = if (calmNow) settings.calmNowHaptics else settings.hapticsEnabled)
         beats = BinauralEngine(this)
