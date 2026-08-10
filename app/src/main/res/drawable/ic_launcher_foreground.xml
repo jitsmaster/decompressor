@@ -1,14 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Breathing glyph mark: two nested circles, outer breathes -->
+<!-- Taiji (yin-yang) launcher mark: black & white, thin white ring border.
+     Dark navy background so the pure-black lobe reads distinctly. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Thin white border ring around the whole symbol -->
     <path
-        android:fillColor="#B4A0E8"
-        android:pathData="M54,54m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.5"
+        android:fillColor="#00000000"
+        android:pathData="M23,54 a31,31 0 1,0 62,0 a31,31 0 1,0 -62,0" />
+
+    <!-- White disc (the light half's base) -->
     <path
-        android:fillColor="#10131A"
-        android:pathData="M54,54m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0" />
+
+    <!-- Black left half -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M54,24 A30,30 0 0,0 54,84 Z" />
+
+    <!-- Top lobe (white, inside the black half) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,39 a15,15 0 1,0 30,0 a15,15 0 1,0 -30,0" />
+
+    <!-- Bottom lobe (black, inside the white half) -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M39,69 a15,15 0 1,0 30,0 a15,15 0 1,0 -30,0" />
+
+    <!-- Opposing dots -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M49,39 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M49,69 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
 </vector>

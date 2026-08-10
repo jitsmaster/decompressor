@@ -31,7 +31,8 @@ object TechniquesRepository {
             Phase(PhaseType.INHALE, 4_600, "and in"),
             Phase(PhaseType.EXHALE, 7_000, "Let it all out", haptic = HapticKind.SOFT),
         ),
-        cycles = 7, // 16.2 s × 7 ≈ 1:53 — the Calm Now preset
+        cycles = 5, // (16.2 s breath + 8.8 s voice) × 5 ≈ 2:05 — the Calm Now preset
+        voiceLeadMs = 8_770,
         soundMode = SoundMode.THETA,
         accentColor = 0xFFB4A0E8,
         useCase = UseCase.PANIC,
@@ -48,7 +49,8 @@ object TechniquesRepository {
             Phase(PhaseType.EXHALE, 5_000, "Breathe out", haptic = HapticKind.SOFT),
             Phase(PhaseType.HOLD, 5_000, haptic = HapticKind.NONE),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 20_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 25_670), // 20 s breath + 5.7 s voice
+        voiceLeadMs = 5_670,
         soundMode = SoundMode.ALPHA,
         accentColor = 0xFFD9A58B,
         useCase = UseCase.ANGER,
@@ -64,7 +66,8 @@ object TechniquesRepository {
             Phase(PhaseType.HOLD, 7_000, "Hold"),
             Phase(PhaseType.EXHALE, 8_000, "Let it go", haptic = HapticKind.SOFT),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 20_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 25_780), // 20 s breath + 5.8 s voice
+        voiceLeadMs = 5_780,
         soundMode = SoundMode.THETA,
         accentColor = 0xFF9DB8E8,
         useCase = UseCase.STRESS,
@@ -79,7 +82,8 @@ object TechniquesRepository {
             Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
             Phase(PhaseType.EXHALE, 7_000, "Breathe out", haptic = HapticKind.SOFT),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 12_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 17_670), // 12 s breath + 5.7 s voice
+        voiceLeadMs = 5_670,
         soundMode = SoundMode.THETA,
         accentColor = 0xFFE2C79E,
         useCase = UseCase.BASELINE,
@@ -94,7 +98,8 @@ object TechniquesRepository {
             Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
             Phase(PhaseType.SOUND_EXHALE, 9_000, "Exhale", haptic = HapticKind.SOFT),
         ),
-        cycles = 18, // six sounds × 3 rounds ≈ 4.2 min
+        cycles = 18, // six sounds × 3 rounds (14 s breath + 7.5 s voice per cycle) ≈ 6.5 min
+        voiceLeadMs = 7_500,
         soundMode = SoundMode.THETA,
         accentColor = 0xFFC79ED2,
         useCase = UseCase.SOUND,
@@ -110,7 +115,7 @@ object TechniquesRepository {
 
     /** Same technique at a different session length. Calm Now is always ~2 minutes. */
     fun withPreset(technique: TechniqueConfig, preset: Preset): TechniqueConfig {
-        val cycleMs = technique.phases.sumOf { it.durationMs }
+        val cycleMs = technique.phases.sumOf { it.durationMs } + technique.voiceLeadMs
         return technique.copy(cycles = cyclesForDuration(preset.durationMs, cycleMs))
     }
 }

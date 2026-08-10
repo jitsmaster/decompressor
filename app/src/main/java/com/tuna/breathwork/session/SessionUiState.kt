@@ -15,4 +15,6 @@ data class SessionUiState(
     val sessionStarted: Boolean = false,
     /** Wall-clock time the current phase started — drives the countdown ring/seconds. */
     val phaseStartedAtMs: Long = 0,
+    /** A recorded voice phrase is speaking — the breath starts when it ends (heads-up). */
+    val voiceCue: Boolean = false,
 )

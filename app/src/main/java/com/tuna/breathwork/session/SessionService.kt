@@ -78,10 +78,28 @@ class SessionService : Service(), SessionSink {
             endSession()
             return START_NOT_STICKY
         }
-        if (intent != null && !::engine.isInitialized) {
-            startSession(intent)
+        if (intent == null) return START_NOT_STICKY
+        // A new session may arrive while an old one is still held (e.g. the user left the
+        // completion panel without tagging): tear the old one down first so the new start
+        // is never swallowed by a live engine.
+        if (::engine.isInitialized) {
+            teardownSession()
         }
+        startSession(intent)
         return START_NOT_STICKY
+    }
+
+    /** Releases the previous session. If it was mid-run it's logged as abandoned; a completed one is already logged. */
+    private fun teardownSession() {
+        runCatching { engine.abort() } // no-op if the engine already completed
+        scope.launch { voice.stop() }
+        haptics.stop()
+        beats.stop()
+        tickPool?.release()
+        tickPool = null
+        releaseWakeLock()
+        pendingRecord = null
+        _state.value = SessionUiState()
     }
 
     private fun startSession(intent: Intent) {
@@ -144,6 +162,7 @@ class SessionService : Service(), SessionSink {
     }
 
     private fun endSession() {
+        haptics.stop()
         runCatching { engine.abort() }
         stopSelf()
     }
@@ -158,8 +177,12 @@ class SessionService : Service(), SessionSink {
     // --- SessionSink ---
 
     override fun onPhase(phase: Phase) {
-        _state.update { it.copy(phase = phase, phaseStartedAtMs = System.currentTimeMillis()) }
+        _state.update { it.copy(phase = phase, phaseStartedAtMs = System.currentTimeMillis(), voiceCue = false) }
         updateNotification()
+    }
+
+    override fun onVoiceCue(phase: Phase) {
+        _state.update { it.copy(voiceCue = true) }
     }
 
     override fun onCycle(cycle: Int, total: Int) {
@@ -169,6 +192,7 @@ class SessionService : Service(), SessionSink {
 
     override fun onComplete(result: SessionResult) {
         releaseWakeLock()
+        haptics.stop()
         beats.stop()
         val record = SessionRecord(
             techniqueId = config.id,
@@ -187,6 +211,7 @@ class SessionService : Service(), SessionSink {
 
     override fun onAbort() {
         releaseWakeLock()
+        haptics.stop()
         beats.stop()
         val record = SessionRecord(
             techniqueId = config.id,
@@ -205,6 +230,7 @@ class SessionService : Service(), SessionSink {
     override fun onDestroy() {
         pendingRecord = null // already persisted without mood on completion; abort path persists itself
         if (::engine.isInitialized) runCatching { engine.abort() }
+        haptics.stop()
         beats.stop()
         tickPool?.release()
         releaseWakeLock()

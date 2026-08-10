@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.4.0 — 2026-08-09
+
+- Voice lead-in model: each breath phase starts EXACTLY when its recorded phrase ends
+  (clip durations baked into the manifest at build time; the engine delays the breath
+  by the clip length). Heads-up: a light haptic tap + "…listen" UI when the voice
+  starts speaking; phase timings account for the lead-ins in preset math and logs.
+- Holds are fully silent: no haptic pattern, no pre-tick (vibration only on
+  inhale/exhale phases).
+- Haptic language: inhale = rapid high-frequency buzz (~12.5 Hz), exhale = slow
+  low-frequency rumble (~1.7 Hz), all gentler amplitudes.
+- Launcher icon: black & white taiji (yin-yang) with a thin white ring border on the
+  dark navy background.
+- History screen: whole screen is now a single LazyColumn — the session list scrolls
+  properly instead of overflowing below the Insights section.
+- Fix: a completed-but-untagged session no longer blocks the next Calm Now start
+  (VM guard + service teardown on new-session intents).
+- 39 unit tests green (added voice-lead timing + duration-with-leads coverage).
+
 ## 0.3.0 — 2026-08-09
 
 - Speech pace: all phrase clips regenerated at 0.5625× (edge -25% + build-time

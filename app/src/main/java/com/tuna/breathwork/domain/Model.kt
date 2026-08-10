@@ -59,6 +59,8 @@ data class TechniqueConfig(
     val useCase: UseCase = UseCase.STRESS,
     /** Rotating per-cycle phrases (e.g. Liu Zi Jue's six sounds), spoken at cycle start. */
     val cycleSounds: List<String>? = null,
+    /** Total recorded-voice lead-in per cycle (breath phases start when the voice ends). */
+    val voiceLeadMs: Long = 0,
 ) {
     val totalDurationMs: Long
         get() = cycles * phases.sumOf { it.durationMs }

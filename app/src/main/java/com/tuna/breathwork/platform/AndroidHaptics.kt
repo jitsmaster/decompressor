@@ -33,8 +33,8 @@ class AndroidHaptics(context: Context, private val enabled: Boolean) : HapticDri
         if (!v.hasVibrator()) return
         when (kind) {
             HapticKind.NONE -> v.cancel()
-            HapticKind.PULSE -> v.vibrate(doubleTap())
-            HapticKind.SOFT -> v.vibrate(continuousSoft(durationMs))
+            HapticKind.PULSE -> v.vibrate(inBuzz())      // high-frequency: rapid pulsing
+            HapticKind.SOFT -> v.vibrate(outRumble())    // low-frequency: slow, deep pulsing
             HapticKind.PRETICK -> v.vibrate(softTick())
         }
     }
@@ -43,30 +43,30 @@ class AndroidHaptics(context: Context, private val enabled: Boolean) : HapticDri
         vibrator?.cancel()
     }
 
-    private fun doubleTap(): VibrationEffect =
+    /** Rapid 40 ms on / 40 ms off (~12.5 Hz) — a high, light buzz for the inhale. */
+    private fun inBuzz(): VibrationEffect =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            VibrationEffect.createWaveform(longArrayOf(0, 90, 140, 90), -1)
+            VibrationEffect.createWaveform(longArrayOf(0, 40, 40), intArrayOf(0, 65, 0), 1)
         } else {
             @Suppress("DEPRECATION")
-            VibrationEffect.createOneShot(90, VibrationEffect.DEFAULT_AMPLITUDE)
+            VibrationEffect.createOneShot(40, 65)
         }
 
-    /** Continuous but gentle (~45% amplitude) buzz for the exhale length. */
-    private fun continuousSoft(durationMs: Long): VibrationEffect {
-        val dur = durationMs.coerceIn(500, 10_000)
+    /** Slow 180 ms on / 420 ms off (~1.7 Hz) — a low, gentle rumble for the exhale. */
+    private fun outRumble(): VibrationEffect {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            VibrationEffect.createOneShot(dur, 110)
+            VibrationEffect.createWaveform(longArrayOf(0, 180, 420), intArrayOf(0, 45, 0), 1)
         } else {
             @Suppress("DEPRECATION")
-            VibrationEffect.createOneShot(dur, 110)
+            VibrationEffect.createOneShot(180, 45)
         }
     }
 
     private fun softTick(): VibrationEffect =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            VibrationEffect.createOneShot(60, 90)
+            VibrationEffect.createOneShot(60, 50)
         } else {
             @Suppress("DEPRECATION")
-            VibrationEffect.createOneShot(60, 90)
+            VibrationEffect.createOneShot(60, 50)
         }
 }

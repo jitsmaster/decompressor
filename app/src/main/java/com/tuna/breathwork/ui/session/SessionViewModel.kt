@@ -37,7 +37,10 @@ class SessionViewModel(
     val state: StateFlow<SessionUiState> = SessionService.state
 
     fun start() {
-        if (SessionService.state.value.sessionStarted) return
+        val s = SessionService.state.value
+        // Actively running → continue it (spec: handoff/ignore). Completed, aborted, or never
+        // started → tear down and start fresh (the service handles the old engine).
+        if (s.sessionStarted && s.completed == null && !s.aborted) return
         SessionService.resetForNewSession()
         SessionService.start(
             app,

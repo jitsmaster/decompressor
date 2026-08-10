@@ -1,66 +1,82 @@
 [
  {
   "id": "intro_practice",
-  "text": "Settle in. Long spine, soft shoulders, relaxed jaw."
+  "text": "Settle in. Long spine, soft shoulders, relaxed jaw.",
+  "durationMs": 9661
  },
  {
   "id": "intro_calmnow",
-  "text": "Begin. Breathe with me."
+  "text": "Begin. Breathe with me.",
+  "durationMs": 5664
  },
  {
   "id": "headphone_reminder",
-  "text": "Put on headphones for the full effect."
+  "text": "Put on headphones for the full effect.",
+  "durationMs": 5088
  },
  {
   "id": "phrase_breathe_in",
-  "text": "Breathe in"
+  "text": "Breathe in",
+  "durationMs": 2749
  },
  {
   "id": "phrase_and_in",
-  "text": "and in"
+  "text": "and in",
+  "durationMs": 2656
  },
  {
   "id": "phrase_hold",
-  "text": "Hold"
+  "text": "Hold",
+  "durationMs": 2557
  },
  {
   "id": "phrase_breathe_out",
-  "text": "Breathe out"
+  "text": "Breathe out",
+  "durationMs": 2941
  },
  {
   "id": "phrase_let_it_all_out",
-  "text": "Let it all out"
+  "text": "Let it all out",
+  "durationMs": 3389
  },
  {
   "id": "phrase_let_it_go",
-  "text": "Let it go"
+  "text": "Let it go",
+  "durationMs": 3040
  },
  {
   "id": "phrase_exhale",
-  "text": "Exhale"
+  "text": "Exhale",
+  "durationMs": 2813
  },
  {
   "id": "sound_xu",
-  "text": "嘘"
+  "text": "嘘",
+  "durationMs": 2343
  },
  {
   "id": "sound_he",
-  "text": "呵"
+  "text": "呵",
+  "durationMs": 2344
  },
  {
   "id": "sound_hu",
-  "text": "呼"
+  "text": "呼",
+  "durationMs": 2342
  },
  {
   "id": "sound_si",
-  "text": "嘶"
+  "text": "嘶",
+  "durationMs": 2342
  },
  {
   "id": "sound_chui",
-  "text": "吹"
+  "text": "吹",
+  "durationMs": 2342
  },
  {
   "id": "sound_xi",
-  "text": "嘻"
+  "text": "嘻",
+  "durationMs": 2342
  }
 ]

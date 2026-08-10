@@ -313,62 +313,77 @@ fun HistoryScreen(onBack: () -> Unit, logStore: com.tuna.breathwork.data.Session
         Header("History", onBack)
         Spacer(Modifier.height(16.dp))
         val current = log ?: return@Column
-        if (current.records.isEmpty()) {
-            Text("No sessions yet. Your first breath is the start.", color = TextMuted)
-            return@Column
-        }
-        Text("Mood trend — does it work?", style = MaterialTheme.typography.labelLarge, color = TextMuted)
-        Spacer(Modifier.height(8.dp))
-        TechniquesRepository.all.forEach { technique ->
-            val trend = current.moodTrend(technique.id)
-            if (trend.values.any { it > 0 }) {
-                TrendRow(technique, trend)
+
+        // One LazyColumn owns the whole scroll: the sessions list can grow unbounded, so a
+        // fixed header + nested LazyColumn (the old layout) overflowed and couldn't scroll.
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (current.records.isEmpty()) {
+                item {
+                    Text("No sessions yet. Your first breath is the start.", color = TextMuted)
+                }
+                return@LazyColumn
             }
-        }
 
-        // ---- Insights: usage + mood analysis (SPEC extension: track usage, analyze mood) ----
-        val totals = UsageAnalytics.totals(current.records)
-        val distribution = UsageAnalytics.moodDistribution(current.records)
-        val calmRates = UsageAnalytics.calmRatePerTechnique(current.records)
-        val perDay = UsageAnalytics.sessionsPerDay(current.records, System.currentTimeMillis(), days = 7)
+            // ---- Insights: usage + mood analysis ----
+            val totals = UsageAnalytics.totals(current.records)
+            val distribution = UsageAnalytics.moodDistribution(current.records)
+            val calmRates = UsageAnalytics.calmRatePerTechnique(current.records)
+            val perDay = UsageAnalytics.sessionsPerDay(current.records, System.currentTimeMillis(), days = 7)
 
-        Spacer(Modifier.height(16.dp))
-        Text("Insights", style = MaterialTheme.typography.labelLarge, color = TextMuted)
-        Spacer(Modifier.height(8.dp))
-        Surface(shape = RoundedCornerShape(16.dp), color = BgSurface, modifier = Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    "${totals.sessionCount} sessions · ${totals.practiceMinutes} min practice" +
-                        (totals.mostUsedTechnique?.let { " · most: ${TechniquesRepository.byId(it).zhName}" } ?: ""),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    MoodTagText(MoodTag.CALM, distribution[MoodTag.CALM] ?: 0)
-                    MoodTagText(MoodTag.NEUTRAL, distribution[MoodTag.NEUTRAL] ?: 0)
-                    MoodTagText(MoodTag.STILL_STRESSED, distribution[MoodTag.STILL_STRESSED] ?: 0)
+            item {
+                Text("Mood trend — does it work?", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+                Spacer(Modifier.height(8.dp))
+            }
+            TechniquesRepository.all.forEach { technique ->
+                val trend = current.moodTrend(technique.id)
+                if (trend.values.any { it > 0 }) {
+                    item(key = "trend_${technique.id}") { TrendRow(technique, trend) }
                 }
-                Text("Calm rate by technique", style = MaterialTheme.typography.labelMedium, color = TextMuted)
-                calmRates.entries.sortedByDescending { it.value }.forEach { (id, rate) ->
-                    CalmRateBar(id, rate)
-                }
-                Text("Sessions · last 7 days", style = MaterialTheme.typography.labelMedium, color = TextMuted)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    perDay.forEach { count ->
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = if (count > 0) AccentDim else BgElevated,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height((14 + 10 * count).dp),
-                        ) {}
+            }
+
+            item {
+                Spacer(Modifier.height(8.dp))
+                Text("Insights", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+                Spacer(Modifier.height(8.dp))
+            }
+            item {
+                Surface(shape = RoundedCornerShape(16.dp), color = BgSurface, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            "${totals.sessionCount} sessions · ${totals.practiceMinutes} min practice" +
+                                (totals.mostUsedTechnique?.let { " · most: ${TechniquesRepository.byId(it).zhName}" } ?: ""),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                            MoodTagText(MoodTag.CALM, distribution[MoodTag.CALM] ?: 0)
+                            MoodTagText(MoodTag.NEUTRAL, distribution[MoodTag.NEUTRAL] ?: 0)
+                            MoodTagText(MoodTag.STILL_STRESSED, distribution[MoodTag.STILL_STRESSED] ?: 0)
+                        }
+                        Text("Calm rate by technique", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+                        calmRates.entries.sortedByDescending { it.value }.forEach { (id, rate) ->
+                            CalmRateBar(id, rate)
+                        }
+                        Text("Sessions · last 7 days", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            perDay.forEach { count ->
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = if (count > 0) AccentDim else BgElevated,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height((14 + 10 * count).dp),
+                                ) {}
+                            }
+                        }
                     }
                 }
             }
-        }
-        Spacer(Modifier.height(16.dp))
-        Text("Sessions", style = MaterialTheme.typography.labelLarge, color = TextMuted)
-        Spacer(Modifier.height(8.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+            item {
+                Spacer(Modifier.height(8.dp))
+                Text("Sessions", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+                Spacer(Modifier.height(8.dp))
+            }
             items(current.records.reversed(), key = { it.timestampEpochMs }) { record ->
                 val name = runCatching { TechniquesRepository.byId(record.techniqueId).name }.getOrDefault(record.techniqueId)
                 Surface(shape = RoundedCornerShape(14.dp), color = BgSurface, modifier = Modifier.fillMaxWidth()) {

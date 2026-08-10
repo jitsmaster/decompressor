@@ -33,10 +33,11 @@ class SessionEngineTest {
         soundMode = SoundMode.ALPHA,
     )
 
-    private class FakeVoice : VoiceProvider {
+    private class FakeVoice(val durationFor: (String) -> Long? = { null }) : VoiceProvider {
         val ops = mutableListOf<String>()
         override suspend fun speak(phrase: String) { ops += "speak:$phrase" }
         override suspend fun stop() { ops += "stop" }
+        override suspend fun clipDurationMs(phrase: String): Long? = durationFor(phrase)
     }
 
     private class FakeHaptics : HapticDriver {
@@ -49,6 +50,7 @@ class SessionEngineTest {
         val phases = mutableListOf<Phase>()
         val cycles = mutableListOf<Pair<Int, Int>>()
         val endings = mutableListOf<Phase>()
+        val cues = mutableListOf<Phase>()
         var completed: SessionResult? = null
         var aborted = false
         override fun onPhase(phase: Phase) { phases += phase }
@@ -56,6 +58,7 @@ class SessionEngineTest {
         override fun onComplete(result: SessionResult) { completed = result }
         override fun onAbort() { aborted = true }
         override fun onPhaseEnding(phase: Phase) { endings += phase }
+        override fun onVoiceCue(phase: Phase) { cues += phase }
     }
 
     private fun engine(scope: kotlinx.coroutines.CoroutineScope, voice: FakeVoice = FakeVoice(),
@@ -155,13 +158,41 @@ class SessionEngineTest {
         )
         advanceTimeBy(8_000); runCurrent()
         assertEquals(
-            listOf(HapticKind.PULSE to 4000L, HapticKind.NONE to 4000L, HapticKind.SOFT to 4000L),
-            haptics.starts.filter { it.first != HapticKind.PRETICK }.take(3),
+            listOf(HapticKind.PULSE to 4000L, HapticKind.NONE to 4000L, HapticKind.NONE to 4000L, HapticKind.SOFT to 4000L),
+            haptics.starts.filter { it.first != HapticKind.PRETICK }.take(4),
         )
     }
 
     @Test
-    fun `pre-tick fires one second before each phase end`() = runTest {
+    fun `breath phase starts exactly when the voice phrase finishes`() = runTest {
+        val voice = FakeVoice(durationFor = { 1_000L })
+        val sink = RecordingSink()
+        engine(this, voice = voice, sink = sink).start()
+        runCurrent()
+        assertEquals("heads-up fires at phase start", 1, sink.cues.size)
+        assertEquals(PhaseType.INHALE, sink.cues[0].type)
+        assertEquals("breath not started while the clip plays", 0, sink.phases.size)
+
+        advanceTimeBy(999); runCurrent()
+        assertEquals(0, sink.phases.size)
+        advanceTimeBy(1); runCurrent()
+        assertEquals("breath starts at the clip end", 1, sink.phases.size)
+        assertEquals(PhaseType.INHALE, sink.phases[0].type)
+    }
+
+    @Test
+    fun `planned duration includes the voice lead-ins`() = runTest {
+        val voice = FakeVoice(durationFor = { 1_000L }) // box: 4 voiced? only inhale+exhale phrase = 2 s/cycle
+        val sink = RecordingSink()
+        engine(this, voice = voice, sink = sink).start()
+        advanceTimeBy(4 * 18_000); advanceUntilIdle() // 16 s breath + 2 s lead per cycle
+        val result = sink.completed
+        assertEquals(4, result?.cyclesCompleted)
+        assertEquals(4L * (16_000L + 2_000L), result?.plannedDurationMs)
+    }
+
+    @Test
+    fun `pre-tick fires one second before each haptic phase end, holds stay silent`() = runTest {
         val haptics = FakeHaptics()
         val sink = RecordingSink()
         engine(this, haptics = haptics, sink = sink).start()
@@ -173,19 +204,19 @@ class SessionEngineTest {
         assertEquals(PhaseType.INHALE, sink.endings[0].type)
         assertEquals(HapticKind.PRETICK, haptics.starts.last().first)
 
-        advanceTimeBy(999); runCurrent() // finish inhale phase
-        advanceTimeBy(2_999); runCurrent()
-        assertEquals(1, sink.endings.size)
-        advanceTimeBy(2); runCurrent() // HOLD pre-tick at 7000 ms
+        advanceTimeBy(4_000); runCurrent() // through HOLD (4000→8000) — no pre-tick, no ending
+        assertEquals("holds never fire a pre-tick", 1, sink.endings.size)
+
+        advanceTimeBy(4_000); runCurrent() // EXHALE pre-tick at 8000+3000 = 11000
         assertEquals(2, sink.endings.size)
-        assertEquals(PhaseType.HOLD, sink.endings[1].type)
+        assertEquals(PhaseType.EXHALE, sink.endings[1].type)
     }
 
     @Test
     fun `short phases skip the pre-tick`() = runTest {
         val short = TechniqueConfig(
             id = "short", name = "Short", zhName = "短", description = "",
-            phases = listOf(Phase(PhaseType.INHALE, 1_200, voicePhrase = "In")),
+            phases = listOf(Phase(PhaseType.INHALE, 1_200)), // no voice, no haptic
             cycles = 2,
             soundMode = SoundMode.THETA,
         )

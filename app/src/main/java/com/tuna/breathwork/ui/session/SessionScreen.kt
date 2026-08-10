@@ -109,9 +109,14 @@ fun SessionScreen(
             } else {
                 val phase = state.phase
                 val phaseStartedAt = state.phaseStartedAtMs
+                val voiceCue = state.voiceCue
                 var remainingMs by remember { mutableLongStateOf(0L) }
-                LaunchedEffect(phase, phaseStartedAt, state.completed) {
-                    while (phase != null && state.completed == null) {
+                LaunchedEffect(phase, phaseStartedAt, state.completed, voiceCue) {
+                    if (voiceCue) {
+                        remainingMs = 0 // the breath hasn't started; the ring waits
+                        return@LaunchedEffect
+                    }
+                    while (phase != null && state.completed == null && !state.voiceCue) {
                         val elapsed = System.currentTimeMillis() - phaseStartedAt
                         remainingMs = (phase.durationMs - elapsed).coerceAtLeast(0)
                         delay(100)
@@ -135,20 +140,37 @@ fun SessionScreen(
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = phaseWord(phase?.type),
-                        style = MaterialTheme.typography.displaySmall,
-                        fontWeight = FontWeight.Light,
-                        letterSpacing = 2.sp,
-                    )
-                    Text(
-                        text = if (phase != null && remainingMs > 0) {
-                            "${ceil(remainingMs / 1000.0).toInt()}"
-                        } else "",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = TextMuted,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
+                    if (voiceCue) {
+                        // Heads-up: the voice is speaking — get ready; the breath starts when it ends.
+                        Text(
+                            text = "${phaseWord(phase?.type)}…",
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Light,
+                            letterSpacing = 2.sp,
+                            color = TextMuted,
+                        )
+                        Text(
+                            text = "listen…",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = TextMuted,
+                            modifier = Modifier.padding(top = 6.dp),
+                        )
+                    } else {
+                        Text(
+                            text = phaseWord(phase?.type),
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Light,
+                            letterSpacing = 2.sp,
+                        )
+                        Text(
+                            text = if (phase != null && remainingMs > 0) {
+                                "${ceil(remainingMs / 1000.0).toInt()}"
+                            } else "",
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = TextMuted,
+                            modifier = Modifier.padding(top = 4.dp),
+                        )
+                    }
                     Text(
                         text = viewModel.config.name,
                         style = MaterialTheme.typography.labelMedium,

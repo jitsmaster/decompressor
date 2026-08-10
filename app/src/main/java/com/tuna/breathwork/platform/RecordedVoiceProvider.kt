@@ -27,7 +27,7 @@ class RecordedVoiceProvider(
 ) : VoiceProvider {
 
     @Serializable
-    private data class PhraseManifest(val id: String, val text: String)
+    private data class PhraseManifest(val id: String, val text: String, val durationMs: Long = 0)
 
     private val lock = Any()
     private val queue = ArrayDeque<String>() // asset paths
@@ -37,27 +37,30 @@ class RecordedVoiceProvider(
     /** Bumped by [stop] to invalidate any in-flight prepare/start — closes the overlap race. */
     private var generation = 0
     private val io = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    /** normalized phrase text → asset path */
-    private val clipByText: Map<String, String> = runCatching {
+    /** normalized phrase text → (asset path, clip duration ms) */
+    private val clipByText: Map<String, Pair<String, Long>> = runCatching {
         val json = context.assets.open("phrases/manifest.json").bufferedReader().use { it.readText() }
         Json.decodeFromString<List<PhraseManifest>>(json)
-            .associate { normalize(it.text) to "phrases/${it.id}.mp3" }
+            .associate { normalize(it.text) to ("phrases/${it.id}.mp3" to it.durationMs) }
     }.getOrDefault(emptyMap())
 
+    override suspend fun clipDurationMs(phrase: String): Long? =
+        clipByText[normalize(phrase)]?.second
+
     override suspend fun speak(phrase: String) {
-        val path = clipByText[normalize(phrase)]
-        if (path == null) {
+        val entry = clipByText[normalize(phrase)]
+        if (entry == null) {
             android.util.Log.w("TunaVoice", "no recorded clip for phrase: \"$phrase\" — falling back to TTS")
             fallback.speak(phrase)
             return
         }
-        synchronized(lock) { queue.addLast(path) }
+        synchronized(lock) { queue.addLast(entry.first) }
         pump()
     }
 
     /** Speak and don't return until the clip has finished playing (used for the headphone reminder). */
     override suspend fun speakAndAwait(phrase: String) {
-        val path = clipByText[normalize(phrase)]
+        val path = clipByText[normalize(phrase)]?.first
         if (path == null) {
             android.util.Log.w("TunaVoice", "no recorded clip for phrase: \"$phrase\" — falling back to TTS")
             fallback.speak(phrase)
