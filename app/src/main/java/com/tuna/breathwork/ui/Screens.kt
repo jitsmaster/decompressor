@@ -1,6 +1,7 @@
 package com.tuna.breathwork.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,10 +51,12 @@ import com.tuna.breathwork.domain.TechniqueConfig
 import com.tuna.breathwork.domain.UseCase
 import com.tuna.breathwork.platform.VoiceSampler
 import com.tuna.breathwork.ui.theme.Accent
+import com.tuna.breathwork.ui.theme.NightGradient
 import com.tuna.breathwork.ui.theme.AccentDim
 import com.tuna.breathwork.ui.theme.BgDeep
 import com.tuna.breathwork.ui.theme.BgElevated
 import com.tuna.breathwork.ui.theme.BgSurface
+import com.tuna.breathwork.ui.theme.SoftCard
 import com.tuna.breathwork.ui.theme.TextMuted
 import com.tuna.breathwork.ui.theme.TextPrimary
 
@@ -66,84 +71,129 @@ fun HomeScreen(
     onSettings: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp),
+        modifier = Modifier.fillMaxSize().background(NightGradient).padding(horizontal = 22.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         Column {
-            Text("吐纳 Tuna", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Light)
             Text(
-                "guided breathwork · 六字诀 · binaural beats",
+                "吐纳",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Light,
+                letterSpacing = 6.sp,
+            )
+            Text(
+                "Tuna · guided breathwork · binaural beats",
                 style = MaterialTheme.typography.labelMedium,
                 color = TextMuted,
+                letterSpacing = 1.sp,
             )
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(34.dp))
 
-            // Calm Now hero
-            Surface(
-                onClick = onCalmNow,
-                shape = RoundedCornerShape(28.dp),
-                color = Accent,
-                modifier = Modifier.fillMaxWidth().height(180.dp),
+            // Calm Now hero: gradient panel + taiji watermark + glow
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(190.dp)
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFF9A88E8), Color(0xFF6C5BB8), Color(0xFF4A3F86))
+                        )
+                    )
+                    .clickable(onClick = onCalmNow),
             ) {
+                MiniTaiji(
+                    modifier = Modifier.align(Alignment.CenterEnd).size(210.dp).padding(end = 6.dp),
+                    color = Color.White,
+                    alpha = 0.10f,
+                )
                 Column(
-                    modifier = Modifier.padding(24.dp),
-                    verticalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 26.dp),
                 ) {
-                    Text("Calm Now", fontSize = 30.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF10131A))
                     Text(
-                        "2 minutes · theta beats · voice-guided\nOne tap. Nothing to choose.",
+                        "Calm Now",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        letterSpacing = 0.5.sp,
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        "One tap · ~2 minutes · theta beats\nNothing to choose. Just breathe.",
                         fontSize = 14.sp,
-                        color = Color(0xFF10131A).copy(alpha = 0.8f),
+                        color = Color.White.copy(alpha = 0.85f),
+                        lineHeight = 21.sp,
                     )
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(18.dp))
 
-            Surface(
-                onClick = onLibrary,
-                shape = RoundedCornerShape(28.dp),
-                color = BgSurface,
-                modifier = Modifier.fillMaxWidth().height(120.dp),
+            SoftCard(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onLibrary),
+                shape = RoundedCornerShape(24.dp),
             ) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                    Text("Practice Library", style = MaterialTheme.typography.titleLarge)
-                    Text("5 techniques · 5 / 10 / 15 min presets", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Accent.copy(alpha = 0.16f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("🧘", fontSize = 20.sp)
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Practice Library", style = MaterialTheme.typography.titleMedium)
+                        Text("5 techniques · 5 / 10 / 15 min", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                    }
+                    Text("›", color = TextMuted, fontSize = 22.sp)
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
 
-            Surface(
-                onClick = onAmbient,
-                shape = RoundedCornerShape(28.dp),
-                color = BgSurface,
-                modifier = Modifier.fillMaxWidth().height(100.dp),
+            SoftCard(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = onAmbient),
+                shape = RoundedCornerShape(24.dp),
             ) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                    Text("Ambient", style = MaterialTheme.typography.titleLarge)
-                    Text("Guided sessions · EN + 普通话 (UCLA Mindful)", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(Color(0xFFE2C79E).copy(alpha = 0.16f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("🎧", fontSize = 20.sp)
+                    }
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Ambient", style = MaterialTheme.typography.titleMedium)
+                        Text("Guided sessions · EN + 普通话", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                    }
+                    Text("›", color = TextMuted, fontSize = 22.sp)
                 }
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TextButton("History", onHistory, Modifier.weight(1f))
-            TextButton("Settings", onSettings, Modifier.weight(1f))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            HomePill("◷  History", onHistory, Modifier.weight(1f))
+            HomePill("⚙  Settings", onSettings, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun TextButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(18.dp),
-        color = BgSurface,
-        modifier = modifier.height(56.dp),
+private fun HomePill(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    SoftCard(
+        modifier = modifier.height(58.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        color = BgSurface.copy(alpha = 0.7f),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(label, color = TextMuted)
+            Text(label, color = TextMuted, letterSpacing = 0.5.sp)
         }
     }
 }
@@ -152,7 +202,7 @@ private fun TextButton(label: String, onClick: () -> Unit, modifier: Modifier = 
 
 @Composable
 fun LibraryScreen(onBack: () -> Unit, onTechnique: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(NightGradient).padding(24.dp)) {
         Header("Practice Library", onBack)
         Spacer(Modifier.height(16.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -165,22 +215,32 @@ fun LibraryScreen(onBack: () -> Unit, onTechnique: (String) -> Unit) {
 
 @Composable
 private fun TechniqueCard(technique: TechniqueConfig, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
-        color = BgSurface,
-        modifier = Modifier.fillMaxWidth(),
+    SoftCard(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(22.dp),
     ) {
-        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.fillMaxWidth()) {
+            // accent edge
             Box(
-                modifier = Modifier.size(14.dp).background(Color(technique.accentColor), CircleShape)
+                Modifier
+                    .align(Alignment.CenterStart)
+                    .width(4.dp)
+                    .height(46.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(Color(technique.accentColor))
             )
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text("${technique.zhName} · ${technique.name}", style = MaterialTheme.typography.titleMedium)
-                Text(technique.description, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            Row(
+                modifier = Modifier.padding(start = 22.dp, end = 18.dp, top = 18.dp, bottom = 18.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("${technique.zhName} · ${technique.name}", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(4.dp))
+                    Text(technique.description, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                }
+                Spacer(Modifier.width(12.dp))
+                UseCaseChip(useCaseLabel(technique.useCase), Color(technique.accentColor))
             }
-            Text(useCaseLabel(technique.useCase), color = TextMuted, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -194,7 +254,7 @@ fun TechniqueDetailScreen(
     onStart: (String, Preset) -> Unit,
 ) {
     val technique = TechniquesRepository.byId(techniqueId)
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(NightGradient).padding(24.dp)) {
         Header(technique.name, onBack)
         Spacer(Modifier.height(12.dp))
         Text(technique.zhName, style = MaterialTheme.typography.headlineMedium, color = Color(technique.accentColor))
@@ -249,7 +309,7 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
     DisposableEffect(Unit) {
         onDispose { sampler?.stop() }
     }
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(NightGradient).padding(24.dp)) {
         Header("Settings", onBack)
         Spacer(Modifier.height(16.dp))
         val s = settings ?: return@Column
@@ -362,7 +422,7 @@ private fun ToggleRow(label: String, checked: Boolean, onToggle: () -> Unit) {
 @Composable
 fun HistoryScreen(onBack: () -> Unit, logStore: com.tuna.breathwork.data.SessionLogStore) {
     val log by logStore.log.collectAsState(initial = null)
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(NightGradient).padding(24.dp)) {
         Header("History", onBack)
         Spacer(Modifier.height(16.dp))
         val current = log ?: return@Column

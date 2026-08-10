@@ -31,6 +31,7 @@ import com.tuna.breathwork.ui.Header
 import com.tuna.breathwork.ui.session.BreathingGlyph
 import com.tuna.breathwork.ui.theme.Accent
 import com.tuna.breathwork.ui.theme.BgDeep
+import com.tuna.breathwork.ui.theme.NightGradient
 import com.tuna.breathwork.ui.theme.BgSurface
 import com.tuna.breathwork.ui.theme.TextMuted
 
@@ -42,7 +43,7 @@ import com.tuna.breathwork.ui.theme.TextMuted
 fun AmbientScreen(onBack: () -> Unit, viewModel: AmbientViewModel) {
     val state by viewModel.state.collectAsState()
     val speechPhase by viewModel.speechPhase.collectAsState()
-    Column(modifier = Modifier.fillMaxSize().background(BgDeep).padding(24.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(NightGradient).padding(24.dp)) {
         Header("Ambient", onBack)
         Spacer(Modifier.height(8.dp))
         Text(

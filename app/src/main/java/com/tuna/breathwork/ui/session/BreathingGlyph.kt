@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
 import com.tuna.breathwork.domain.Phase
 import com.tuna.breathwork.domain.PhaseType
 import kotlin.math.min
@@ -59,8 +61,19 @@ fun BreathingGlyph(
         val r = min(size.width, size.height) / 2 * scale
         val c = Offset(size.width / 2, size.height / 2)
 
-        // Outer glow
-        drawCircle(color = yin.copy(alpha = 0.08f), radius = r * 1.30f, center = c)
+        // Soft radial glow behind the symbol
+        drawCircle(
+            brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                colors = listOf(yin.copy(alpha = 0.22f), yin.copy(alpha = 0.06f), Color.Transparent),
+                center = c,
+                radius = r * 1.7f,
+            ),
+            radius = r * 1.7f,
+            center = c,
+        )
+
+        // Outer ring
+        drawCircle(color = yin.copy(alpha = 0.25f), radius = r * 1.18f, center = c, style = Stroke(1.5.dp.toPx()))
 
         // 1. Dark disc
         drawCircle(color = yin, radius = r, center = c)

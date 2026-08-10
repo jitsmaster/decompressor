@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 — 2026-08-09
+
+- Bilingual guidance: voice language switcher (English / 中文) in Settings with an
+  in-app "Test voice" sampler; ZH clips (Xiaoxiao, warm female — matching the UCLA
+  呼吸冥想 ambient voice) for every phrase; on-screen phase words follow the language.
+- Chinese voice pitch lowered 10% (build-time asetrate/aresample on the real file
+  sample rate — duration preserved, manifest refreshed).
+- UI v2 (researched against Calm/Headspace/breathwork patterns):
+  - Night-sky vertical gradient backgrounds on every screen
+  - Calm Now hero: lavender gradient panel + taiji watermark + soft type
+  - Elevated rounded cards (SoftCard: hairline edge + soft shadow)
+  - Technique cards: accent edge bars + use-case chips
+  - Home pills for History/Settings; breathing glyph gains a radial glow + outer ring
+  - Airy section labels, letter-spaced titles, consistent spacing
+
 ## 0.4.0 — 2026-08-09
 
 - Voice lead-in model: each breath phase starts EXACTLY when its recorded phrase ends

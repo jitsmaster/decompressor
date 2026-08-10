@@ -41,6 +41,7 @@ import com.tuna.breathwork.domain.MoodTag
 import com.tuna.breathwork.domain.PhaseType
 import com.tuna.breathwork.session.HeadphoneStatus
 import com.tuna.breathwork.ui.theme.BgDeep
+import com.tuna.breathwork.ui.theme.NightGradient
 import com.tuna.breathwork.ui.theme.TextMuted
 import kotlinx.coroutines.delay
 import kotlin.math.ceil
@@ -85,7 +86,7 @@ fun SessionScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeep),
+            .background(NightGradient),
         contentAlignment = Alignment.Center,
     ) {
         Column(

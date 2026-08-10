@@ -9,7 +9,7 @@
   "zh": {
    "text": "吸气",
    "file": "phrase_breathe_in_zh.mp3",
-   "durationMs": 2378
+   "durationMs": 2642
   }
  },
  {
@@ -22,7 +22,7 @@
   "zh": {
    "text": "再吸一点",
    "file": "phrase_and_in_zh.mp3",
-   "durationMs": 2749
+   "durationMs": 3061
   }
  },
  {
@@ -35,7 +35,7 @@
   "zh": {
    "text": "屏住",
    "file": "phrase_hold_zh.mp3",
-   "durationMs": 2342
+   "durationMs": 2621
   }
  },
  {
@@ -48,7 +48,7 @@
   "zh": {
    "text": "呼气",
    "file": "phrase_breathe_out_zh.mp3",
-   "durationMs": 2357
+   "durationMs": 2619
   }
  },
  {
@@ -61,7 +61,7 @@
   "zh": {
    "text": "全部呼出",
    "file": "phrase_let_it_all_out_zh.mp3",
-   "durationMs": 2813
+   "durationMs": 3131
   }
  },
  {
@@ -74,7 +74,7 @@
   "zh": {
    "text": "放松",
    "file": "phrase_let_it_go_zh.mp3",
-   "durationMs": 2344
+   "durationMs": 2614
   }
  },
  {
@@ -87,7 +87,7 @@
   "zh": {
    "text": "呼气",
    "file": "phrase_exhale_zh.mp3",
-   "durationMs": 2343
+   "durationMs": 2602
   }
  },
  {
@@ -100,7 +100,7 @@
   "zh": {
    "text": "背挺直，肩膀放松。",
    "file": "intro_practice_zh.mp3",
-   "durationMs": 4413
+   "durationMs": 4907
   }
  },
  {
@@ -113,7 +113,7 @@
   "zh": {
    "text": "开始。跟我一起呼吸。",
    "file": "intro_calmnow_zh.mp3",
-   "durationMs": 5437
+   "durationMs": 6048
   }
  },
  {
@@ -126,55 +126,55 @@
   "zh": {
    "text": "戴上耳机效果更好。",
    "file": "headphone_reminder_zh.mp3",
-   "durationMs": 4349
+   "durationMs": 4837
   }
  },
  {
   "id": "sound_xu",
   "en": {
    "text": "嘘",
-   "file": "sound_xu_en.mp3",
-   "durationMs": 2343
+   "file": "sound_xu_zh.mp3",
+   "durationMs": 2618
   }
  },
  {
   "id": "sound_he",
   "en": {
    "text": "呵",
-   "file": "sound_he_en.mp3",
-   "durationMs": 2344
+   "file": "sound_he_zh.mp3",
+   "durationMs": 2603
   }
  },
  {
   "id": "sound_hu",
   "en": {
    "text": "呼",
-   "file": "sound_hu_en.mp3",
-   "durationMs": 2342
+   "file": "sound_hu_zh.mp3",
+   "durationMs": 2622
   }
  },
  {
   "id": "sound_si",
   "en": {
    "text": "嘶",
-   "file": "sound_si_en.mp3",
-   "durationMs": 2342
+   "file": "sound_si_zh.mp3",
+   "durationMs": 2622
   }
  },
  {
   "id": "sound_chui",
   "en": {
    "text": "吹",
-   "file": "sound_chui_en.mp3",
-   "durationMs": 2342
+   "file": "sound_chui_zh.mp3",
+   "durationMs": 2618
   }
  },
  {
   "id": "sound_xi",
   "en": {
    "text": "嘻",
-   "file": "sound_xi_en.mp3",
-   "durationMs": 2342
+   "file": "sound_xi_zh.mp3",
+   "durationMs": 2614
   }
  }
 ]

@@ -17,7 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tuna.breathwork.data.TechniquesRepository
 import com.tuna.breathwork.ui.session.SessionScreen
 import com.tuna.breathwork.ui.session.SessionViewModel
-import com.tuna.breathwork.ui.theme.BgDeep
+import com.tuna.breathwork.ui.theme.NightGradient
 import com.tuna.breathwork.ui.theme.TunaTheme
 
 /**
@@ -55,7 +55,7 @@ private fun CalmNowScreen(onFinished: () -> Unit, onAborted: () -> Unit) {
         key = "calm_now",
         factory = SessionViewModel.Factory(calmNow = true),
     )
-    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(BgDeep)) {
+    androidx.compose.foundation.layout.Box(Modifier.fillMaxSize().background(NightGradient)) {
         SessionScreen(viewModel = vm, onFinished = onFinished, onAborted = onAborted)
     }
 }
