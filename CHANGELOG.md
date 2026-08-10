@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.6.0 — 2026-08-09
+
+- THEME FIX: implicit text was drawing pure black (Material3 LocalContentColor
+  defaults to black; only Surface overrides it) — titles were invisible in dark
+  mode. TunaTheme now provides the theme's text color globally; dark mode fully
+  readable.
+- Theme setting: Follow system / Dark / Light, applies live (activities collect
+  the settings flow). New calm light-lavender palette; system bars follow the
+  theme (light icons on dark, dark icons on light).
+- History/Settings home pills: labels centered both axes (inner Box now
+  fillMaxSize).
+- Chinese voice pitch lowered 10% (build-time relative-rate asetrate/aresample —
+  earlier attempt silently sped the audio up; fixed and manifest refreshed).
+- Voice routing fix: provider maps every language by the engine's canonical text,
+  so ZH sessions actually play the 中文 clips (were falling back to English TTS);
+  the six Liu Zi Jue sounds now keyed by their romanized names (were TTS all along).
+
 ## 0.5.0 — 2026-08-09
 
 - Bilingual guidance: voice language switcher (English / 中文) in Settings with an

@@ -26,6 +26,8 @@ data class Settings(
     val calmNowTechniqueId: String = "sigh",
     /** Session guidance language: "en" or "zh". */
     val voiceLanguage: String = "en",
+    /** App theme: "system" | "dark" | "light". */
+    val themeMode: String = "system",
 )
 
 class SettingsStore(private val context: Context) {
@@ -41,6 +43,7 @@ class SettingsStore(private val context: Context) {
             allowScreenOff = prefs[Keys.ALLOW_SCREEN_OFF] ?: true,
             calmNowTechniqueId = prefs[Keys.CALM_NOW_TECHNIQUE] ?: "sigh",
             voiceLanguage = prefs[Keys.VOICE_LANGUAGE] ?: "en",
+            themeMode = prefs[Keys.THEME_MODE] ?: "system",
         )
     }
 
@@ -58,6 +61,7 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.ALLOW_SCREEN_OFF] = next.allowScreenOff
             prefs[Keys.CALM_NOW_TECHNIQUE] = next.calmNowTechniqueId
             prefs[Keys.VOICE_LANGUAGE] = next.voiceLanguage
+            prefs[Keys.THEME_MODE] = next.themeMode
         }
     }
 
@@ -71,5 +75,6 @@ class SettingsStore(private val context: Context) {
         val ALLOW_SCREEN_OFF = booleanPreferencesKey("allow_screen_off")
         val CALM_NOW_TECHNIQUE = stringPreferencesKey("calm_now_technique")
         val VOICE_LANGUAGE = stringPreferencesKey("voice_language")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 }

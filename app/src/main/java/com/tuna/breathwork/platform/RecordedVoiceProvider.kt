@@ -47,18 +47,19 @@ class RecordedVoiceProvider(
     private val clipByText: Map<String, Map<String, Pair<String, Long>>> = runCatching {
         val json = context.assets.open("phrases/manifest.json").bufferedReader().use { it.readText() }
         val entries = Json.decodeFromString<List<PhraseManifest>>(json)
-        val byLang = VoiceLanguage.entries.associate { lang ->
+        // Key EVERY language by the engine's canonical (EN) text — the engine always
+        // speaks English config phrases; ZH sessions just play the zh clips for them.
+        // Sounds (en-only) fall back to the same file in both languages.
+        VoiceLanguage.entries.associate { lang ->
             lang.key to entries.mapNotNull { entry ->
+                val en = entry.en ?: return@mapNotNull null
                 val variant = when (lang) {
-                    VoiceLanguage.EN -> entry.en
-                    VoiceLanguage.ZH -> entry.zh
+                    VoiceLanguage.EN -> en
+                    VoiceLanguage.ZH -> entry.zh ?: en
                 }
-                variant?.let { normalize(it.text) to ("phrases/${it.file}" to it.durationMs) }
+                normalize(en.text) to ("phrases/${variant.file}" to variant.durationMs)
             }.toMap()
         }
-        // Sounds exist only as EN entries; make them available to ZH sessions too.
-        val enOnly = byLang.getValue("en") - byLang.getValue("zh").keys
-        byLang + ("zh" to (byLang.getValue("zh") + enOnly))
     }.getOrDefault(emptyMap())
 
     private val activeClips: Map<String, Pair<String, Long>> =

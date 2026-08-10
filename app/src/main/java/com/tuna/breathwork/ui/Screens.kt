@@ -51,6 +51,7 @@ import com.tuna.breathwork.domain.TechniqueConfig
 import com.tuna.breathwork.domain.UseCase
 import com.tuna.breathwork.platform.VoiceSampler
 import com.tuna.breathwork.ui.theme.Accent
+import com.tuna.breathwork.ui.theme.ThemeMode
 import com.tuna.breathwork.ui.theme.NightGradient
 import com.tuna.breathwork.ui.theme.AccentDim
 import com.tuna.breathwork.ui.theme.BgDeep
@@ -192,7 +193,7 @@ private fun HomePill(label: String, onClick: () -> Unit, modifier: Modifier = Mo
         shape = RoundedCornerShape(20.dp),
         color = BgSurface.copy(alpha = 0.7f),
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(label, color = TextMuted, letterSpacing = 0.5.sp)
         }
     }
@@ -351,6 +352,27 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
         ) {
             Box(modifier = Modifier.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
                 Text("▶ Test voice", color = TextPrimary, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+
+        Text("Theme", style = MaterialTheme.typography.labelLarge, color = TextMuted)
+        Spacer(Modifier.height(8.dp))
+        ThemeMode.entries.forEach { mode ->
+            val selected = s.themeMode == mode.key
+            Surface(
+                onClick = { scope.launch { settingsStore.update { it.copy(themeMode = mode.key) } } },
+                shape = RoundedCornerShape(16.dp),
+                color = if (selected) AccentDim else BgSurface,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(mode.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Text(if (selected) "✓" else "", color = Accent)
+                }
             }
         }
         Spacer(Modifier.height(20.dp))

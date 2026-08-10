@@ -132,7 +132,7 @@
  {
   "id": "sound_xu",
   "en": {
-   "text": "嘘",
+   "text": "Xu",
    "file": "sound_xu_zh.mp3",
    "durationMs": 2618
   }
@@ -140,7 +140,7 @@
  {
   "id": "sound_he",
   "en": {
-   "text": "呵",
+   "text": "He",
    "file": "sound_he_zh.mp3",
    "durationMs": 2603
   }
@@ -148,7 +148,7 @@
  {
   "id": "sound_hu",
   "en": {
-   "text": "呼",
+   "text": "Hu",
    "file": "sound_hu_zh.mp3",
    "durationMs": 2622
   }
@@ -156,7 +156,7 @@
  {
   "id": "sound_si",
   "en": {
-   "text": "嘶",
+   "text": "Si",
    "file": "sound_si_zh.mp3",
    "durationMs": 2622
   }
@@ -164,7 +164,7 @@
  {
   "id": "sound_chui",
   "en": {
-   "text": "吹",
+   "text": "Chui",
    "file": "sound_chui_zh.mp3",
    "durationMs": 2618
   }
@@ -172,7 +172,7 @@
  {
   "id": "sound_xi",
   "en": {
-   "text": "嘻",
+   "text": "Xi",
    "file": "sound_xi_zh.mp3",
    "durationMs": 2614
   }
