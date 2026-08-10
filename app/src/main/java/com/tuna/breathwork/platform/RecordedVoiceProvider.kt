@@ -69,7 +69,7 @@ class RecordedVoiceProvider(
             currentDone = done
         }
         pump()
-        withTimeoutOrNull(8_000) { done.await() }
+        withTimeoutOrNull(20_000) { done.await() }
     }
 
     override suspend fun stop() {

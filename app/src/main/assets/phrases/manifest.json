@@ -9,7 +9,7 @@
  },
  {
   "id": "headphone_reminder",
-  "text": "Put on headphones for the full effect. We'll continue either way."
+  "text": "Put on headphones for the full effect."
  },
  {
   "id": "phrase_breathe_in",
@@ -38,22 +38,6 @@
  {
   "id": "phrase_exhale",
   "text": "Exhale"
- },
- {
-  "id": "posture_1",
-  "text": "Long spine"
- },
- {
-  "id": "posture_2",
-  "text": "Drop your shoulders"
- },
- {
-  "id": "posture_3",
-  "text": "Relax your jaw"
- },
- {
-  "id": "posture_4",
-  "text": "Lengthen your neck"
  },
  {
   "id": "sound_xu",

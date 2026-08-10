@@ -17,7 +17,6 @@ data class Settings(
     val voicePitch: Float = 0.55f,
     val hapticsEnabled: Boolean = true,      // practice mode
     val calmNowHaptics: Boolean = true,      // eyes-closed guidance default on
-    val posturePromptsEnabled: Boolean = true,
     val reduceMotion: Boolean = false,
     /** Soft tick in the final second of each phase. */
     val countdownTicks: Boolean = true,
@@ -35,7 +34,6 @@ class SettingsStore(private val context: Context) {
             voicePitch = prefs[Keys.VOICE_PITCH] ?: 0.55f,
             hapticsEnabled = prefs[Keys.HAPTICS] ?: true,
             calmNowHaptics = prefs[Keys.CALM_NOW_HAPTICS] ?: true,
-            posturePromptsEnabled = prefs[Keys.POSTURE] ?: true,
             reduceMotion = prefs[Keys.REDUCE_MOTION] ?: false,
             countdownTicks = prefs[Keys.COUNTDOWN_TICKS] ?: true,
             allowScreenOff = prefs[Keys.ALLOW_SCREEN_OFF] ?: true,
@@ -52,7 +50,6 @@ class SettingsStore(private val context: Context) {
             prefs[Keys.VOICE_PITCH] = next.voicePitch
             prefs[Keys.HAPTICS] = next.hapticsEnabled
             prefs[Keys.CALM_NOW_HAPTICS] = next.calmNowHaptics
-            prefs[Keys.POSTURE] = next.posturePromptsEnabled
             prefs[Keys.REDUCE_MOTION] = next.reduceMotion
             prefs[Keys.COUNTDOWN_TICKS] = next.countdownTicks
             prefs[Keys.ALLOW_SCREEN_OFF] = next.allowScreenOff
@@ -65,7 +62,6 @@ class SettingsStore(private val context: Context) {
         val VOICE_PITCH = floatPreferencesKey("voice_pitch")
         val HAPTICS = booleanPreferencesKey("haptics")
         val CALM_NOW_HAPTICS = booleanPreferencesKey("calm_now_haptics")
-        val POSTURE = booleanPreferencesKey("posture_prompts")
         val REDUCE_MOTION = booleanPreferencesKey("reduce_motion")
         val COUNTDOWN_TICKS = booleanPreferencesKey("countdown_ticks")
         val ALLOW_SCREEN_OFF = booleanPreferencesKey("allow_screen_off")

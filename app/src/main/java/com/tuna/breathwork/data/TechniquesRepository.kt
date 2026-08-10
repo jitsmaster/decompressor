@@ -27,11 +27,11 @@ object TechniquesRepository {
         zhName = "生理叹息",
         description = "Double inhale, long exhale — the fastest acute calm (Stanford 2023).",
         phases = listOf(
-            Phase(PhaseType.INHALE, 2_600, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.INHALE, 2_600, "and in"),
+            Phase(PhaseType.INHALE, 4_600, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.INHALE, 4_600, "and in"),
             Phase(PhaseType.EXHALE, 7_000, "Let it all out", haptic = HapticKind.SOFT),
         ),
-        cycles = 10, // 12.2 s × 10 ≈ 2:02 — the Calm Now preset
+        cycles = 7, // 16.2 s × 7 ≈ 1:53 — the Calm Now preset
         soundMode = SoundMode.THETA,
         accentColor = 0xFFB4A0E8,
         useCase = UseCase.PANIC,
@@ -41,14 +41,14 @@ object TechniquesRepository {
         id = "box",
         name = "Box Breathing",
         zhName = "方盒呼吸",
-        description = "4-4-4-4. Structured counting that interrupts rising anger (SEAL technique).",
+        description = "Equal four-phase rhythm (5-5-5-5) that interrupts rising anger (SEAL technique).",
         phases = listOf(
-            Phase(PhaseType.INHALE, 4_000, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.HOLD, 4_000, haptic = HapticKind.NONE), // silent — the countdown + pre-tick carry the timing
-            Phase(PhaseType.EXHALE, 4_000, "Breathe out", haptic = HapticKind.SOFT),
-            Phase(PhaseType.HOLD, 4_000, haptic = HapticKind.NONE), // silent hold hosts the posture cue
+            Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.HOLD, 5_000, haptic = HapticKind.NONE), // silent — the countdown + pre-tick carry the timing
+            Phase(PhaseType.EXHALE, 5_000, "Breathe out", haptic = HapticKind.SOFT),
+            Phase(PhaseType.HOLD, 5_000, haptic = HapticKind.NONE),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 16_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 20_000),
         soundMode = SoundMode.ALPHA,
         accentColor = 0xFFD9A58B,
         useCase = UseCase.ANGER,
@@ -60,11 +60,11 @@ object TechniquesRepository {
         zhName = "四七八呼吸",
         description = "The natural tranquilizer — for stress and winding down (Dr. Weil).",
         phases = listOf(
-            Phase(PhaseType.INHALE, 4_000, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
             Phase(PhaseType.HOLD, 7_000, "Hold"),
             Phase(PhaseType.EXHALE, 8_000, "Let it go", haptic = HapticKind.SOFT),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 19_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 20_000),
         soundMode = SoundMode.THETA,
         accentColor = 0xFF9DB8E8,
         useCase = UseCase.STRESS,
@@ -76,10 +76,10 @@ object TechniquesRepository {
         zhName = "谐振呼吸",
         description = "~5.5 breaths per minute — resonance breathing for your daily baseline.",
         phases = listOf(
-            Phase(PhaseType.INHALE, 5_500, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.EXHALE, 5_500, "Breathe out", haptic = HapticKind.SOFT),
+            Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.EXHALE, 7_000, "Breathe out", haptic = HapticKind.SOFT),
         ),
-        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 11_000),
+        cycles = cyclesForDuration(Preset.MEDIUM.durationMs, 12_000),
         soundMode = SoundMode.THETA,
         accentColor = 0xFFE2C79E,
         useCase = UseCase.BASELINE,
@@ -91,10 +91,10 @@ object TechniquesRepository {
         zhName = "六字诀",
         description = "Six healing sounds on the exhale — the ancient Chinese release practice.",
         phases = listOf(
-            Phase(PhaseType.INHALE, 4_000, "Breathe in", haptic = HapticKind.PULSE),
-            Phase(PhaseType.SOUND_EXHALE, 7_000, "Exhale", haptic = HapticKind.SOFT),
+            Phase(PhaseType.INHALE, 5_000, "Breathe in", haptic = HapticKind.PULSE),
+            Phase(PhaseType.SOUND_EXHALE, 9_000, "Exhale", haptic = HapticKind.SOFT),
         ),
-        cycles = 18, // six sounds × 3 rounds ≈ 3.3 min
+        cycles = 18, // six sounds × 3 rounds ≈ 4.2 min
         soundMode = SoundMode.THETA,
         accentColor = 0xFFC79ED2,
         useCase = UseCase.SOUND,

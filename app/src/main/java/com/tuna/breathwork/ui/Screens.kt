@@ -273,9 +273,6 @@ fun SettingsScreen(onBack: () -> Unit, settingsStore: SettingsStore) {
         ToggleRow("Haptic pulse (Calm Now)", s.calmNowHaptics) {
             scope.launch { settingsStore.update { it.copy(calmNowHaptics = !it.calmNowHaptics) } }
         }
-        ToggleRow("Posture reminders", s.posturePromptsEnabled) {
-            scope.launch { settingsStore.update { it.copy(posturePromptsEnabled = !it.posturePromptsEnabled) } }
-        }
         ToggleRow("Countdown ticks", s.countdownTicks) {
             scope.launch { settingsStore.update { it.copy(countdownTicks = !it.countdownTicks) } }
         }

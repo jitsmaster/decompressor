@@ -3,7 +3,6 @@ package com.tuna.breathwork.session
 import com.tuna.breathwork.domain.HapticKind
 import com.tuna.breathwork.domain.Phase
 import com.tuna.breathwork.domain.PhaseType
-import com.tuna.breathwork.domain.PostureCueScheduler
 import com.tuna.breathwork.domain.SessionResult
 import com.tuna.breathwork.domain.TechniqueConfig
 import kotlinx.coroutines.CancellationException
@@ -52,8 +51,6 @@ class SessionEngine(
     private val voice: VoiceProvider,
     private val haptics: HapticDriver,
     private val sink: SessionSink,
-    private val calmNow: Boolean = false,
-    private val postureEnabled: Boolean = true,
     private val scope: CoroutineScope,
 ) {
     private var job: Job? = null
@@ -75,21 +72,17 @@ class SessionEngine(
         try {
             voice.stop()
             sessionIntro?.let { voice.speak(it) }
-            val scheduler = PostureCueScheduler(POSTURE_TEMPLATES, calmNow = calmNow)
             var cycle = 0
             while (cycle < config.cycles) {
-                val cue = if (postureEnabled) scheduler.cueForCycle(cycle) else null
                 val cycleSound = config.cycleSounds?.getOrNull(cycle % config.cycleSounds.size)
-                // Cue + cycle sound ride the cycle's longest phase (prefer exhale): there the
-                // queued phrases have room alongside the phase's own phrase, so recorded clips
-                // never get cut by the phase-boundary flush.
-                val cuePhaseIndex = cuePhaseIndex(config)
+                // The cycle sound (Liu Zi Jue) rides the cycle's longest phase — there the
+                // queued clips have room alongside the phase's own phrase.
+                val soundPhaseIndex = longestPhaseIndex(config)
                 config.phases.forEachIndexed { index, phase ->
                     voice.stop()
                     haptics.start(phase.haptic, phase.durationMs)
                     phase.voicePhrase?.let { voice.speak(it) }
-                    if (index == cuePhaseIndex) {
-                        cue?.let { voice.speak(it) }
+                    if (index == soundPhaseIndex) {
                         cycleSound?.let { voice.speak(it) }
                     }
                     sink.onPhase(phase)
@@ -121,30 +114,10 @@ class SessionEngine(
     }
 
     /**
-     * Where the posture cue / cycle sound rides: prefer a quiet hold right after the
-     * exhale (room to breathe, no phrase to collide with), else the longest
-     * EXHALE/SOUND_EXHALE, else the longest phase.
+     * Longest phase of the cycle (ties → first), where extra queued speech has room.
      */
-    private fun cuePhaseIndex(config: TechniqueConfig): Int {
-        val exhaleIdx = config.phases.indexOfFirst { it.type == PhaseType.EXHALE || it.type == PhaseType.SOUND_EXHALE }
-        if (exhaleIdx >= 0 && exhaleIdx + 1 < config.phases.size) {
-            val next = config.phases[exhaleIdx + 1]
-            if (next.voicePhrase == null && next.durationMs >= 3_000) return exhaleIdx + 1
-        }
-        val maxDur = config.phases.maxOf { it.durationMs }
-        val longExhale = config.phases.indexOfFirst {
-            it.durationMs == maxDur && (it.type == PhaseType.EXHALE || it.type == PhaseType.SOUND_EXHALE)
-        }
-        return if (longExhale >= 0) longExhale else config.phases.indexOfFirst { it.durationMs == maxDur }
-    }
+    private fun longestPhaseIndex(config: TechniqueConfig): Int =
+        config.phases.indices.maxByOrNull { config.phases[it].durationMs } ?: 0
 
-    companion object {
-        // Short, calm posture prompts — texts match the bundled recorded clips exactly.
-        val POSTURE_TEMPLATES = listOf(
-            "Long spine",
-            "Drop your shoulders",
-            "Relax your jaw",
-            "Lengthen your neck",
-        )
-    }
+    companion object {}
 }

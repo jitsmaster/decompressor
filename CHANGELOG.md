@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 — 2026-08-09
+
+- Speech pace: all phrase clips regenerated at 0.5625× (edge -25% + build-time
+  atempo 0.75 — slowness baked into the mp3 files, playback untouched). Phase
+  timings redesigned to fit: sigh 4.6/4.6/7 s (Calm Now ≈ 1:53), box 5-5-5-5,
+  4-7-8 5/7/8, coherent 5/7, Liu Zi Jue 5/9 s.
+- Recurring posture cues removed (no phase can host them at this pace); posture
+  coaching lives in the session intro; "Posture reminders" toggle retired.
+- Sessions run in a foreground SessionService (survives screen-off and activity
+  teardown) with a live notification; completed sessions are logged immediately
+  (durable) and the mood tag patches the record in place.
+- Fix: session total-cycles now published by the service (was 0/0).
+- 37 unit tests green.
+
 ## 0.2.0 — 2026-08-09
 
 Voice, rhythm, and ambient upgrades.

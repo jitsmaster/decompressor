@@ -109,8 +109,6 @@ class SessionService : Service(), SessionSink {
             voice = voice,
             haptics = haptics,
             sink = this,
-            calmNow = calmNow,
-            postureEnabled = settings.posturePromptsEnabled,
             scope = scope,
         ).apply { if (calmNow) sessionIntro = "Begin. Breathe with me." }
 
@@ -129,13 +127,14 @@ class SessionService : Service(), SessionSink {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
         )
         if (settings.allowScreenOff) acquireWakeLock()
+        _state.update { it.copy(totalCycles = config.cycles) }
 
         scope.launch {
             _state.update { it.copy(headphoneStatus = HeadphoneStatus.CHECKING) }
             val stereo = withContext(Dispatchers.IO) { HeadphoneDetector(this@SessionService).hasHeadphones() }
             _state.update { it.copy(headphoneStatus = if (stereo) HeadphoneStatus.STEREO else HeadphoneStatus.MONO_FALLBACK) }
             if (!stereo) {
-                voice.speakAndAwait("Put on headphones for the full effect. We'll continue either way.")
+                voice.speakAndAwait("Put on headphones for the full effect.")
             }
             beats.start(spec = specFor(config.soundMode), stereo = stereo, onFocusLost = { endSession() })
             engine.start()
